@@ -1,0 +1,5 @@
+#!/bin/sh
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+NIX_PATH=nixos-configuration=$DIR/configuration.nix:$NIX_PATH nixos-rebuild build

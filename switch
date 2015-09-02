@@ -1,0 +1,10 @@
+#!/bin/sh
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+if [ "$(id -u)" != "0" ]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+NIX_PATH=nixos-configuration=$DIR/configuration.nix:$NIX_PATH nixos-rebuild switch
