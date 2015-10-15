@@ -1,59 +1,21 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
+# http://loicpefferkorn.net/2015/01/arch-linux-on-macbook-pro-retina-2014-with-dm-crypt-lvm-and-suspend-to-disk/
+# https://wiki.archlinux.org/index.php/Intel_graphics#Module-based_Powersaving_Options
+# https://bbs.archlinux.org/viewtopic.php?id=199388
 
 { config, lib, pkgs, ... }:
 
 {
-
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-
-      ./gpg-agent.nix
-    ];
+  imports = [
+    ./hardware-configuration.nix
+    ./gpg-agent.nix
+  ];
 
   # Use the gummiboot efi boot loader.
+  boot.kernelPackages = pkgs.linuxPackages_4_2;
+  boot.kernelModules = [ "msr" "coretemp" "applesmc" ];
   boot.loader.gummiboot.enable = true;
   boot.loader.gummiboot.timeout = 8;
   boot.loader.efi.canTouchEfiVariables = true;
-  #boot.kernelParams = [];
-  #boot.extraModprobeConfig = "";
-  boot.initrd.luks.devices = [
-    {
-      name = "nixos";
-      device = "/dev/disk/by-uuid/d0dee3bf-3a1a-4a94-bc0d-2d2d0d5a77d1";
-      allowDiscards = true;
-    }
-  ];
-  #boot.initrd.luks.cryptoModules = ["aes" "sha256" "sha1" "cbc"];
-  #boot.initrd.kernelModules = [];
-  #boot.initrd.availableKernelModules = [
-  #  "ohci_pci"
-  #  "ehci_pci"
-  #  "xhci_pci"
-  #  "ahci"
-  #  "usb_storage"
-  #];
-
-  # Select internationalisation properties.
-  # i18n = {
-  #   consoleFont = "lat9w-16";
-  #   consoleKeyMap = "us";
-  #   defaultLocale = "en_US.UTF-8";
-  # };
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  time.timeZone = "US/Eastern";
-
-  # powertop needs msr and so far it does not load when needed
-  boot.kernelModules = [ "msr" "coretemp" "applesmc" ];
-
   boot.kernel.sysctl = {
     # Note that inotify watches consume 1kB on 64-bit machines.
     "fs.inotify.max_user_watches"   = 1048576;   # default:  8192
@@ -61,40 +23,32 @@
     "fs.inotify.max_queued_events"  =   32768;   # default: 16384
   };
 
-  virtualisation.docker.enable = true;
-  virtualisation.docker.extraOptions = "--bridge=fan-10-3-4 --mtu=1480 --iptables=false";
-  environment.etc."network/fan".text = ''
-    10.0.0.0/8 172.16.3.4/16 dhcp
-  '';
-  #networking.localCommands = ''
-  #  ${pkgs.fanctl}/bin/fanctl up 10.0.0.0/8 172.16.3.4/16 dhcp
-  #'';
+  # Select internationalisation properties.
+  time.timeZone = "US/Eastern";
+  i18n.consoleUseXkbConfig = true;
 
-  networking.fan.enable = true;
+  services.printing.enable = true;
+
   networking.hostName = "cstrahan-mbp-nixos"; # Define your hostname.
   networking.hostId = "0ae2b4e1";
-  # networking.wireless.enable = true;  # Enables wireless.
+  networking.networkmanager.enable = lib.mkForce true;
+  networking.wireless.enable = lib.mkForce false;
 
-  nixpkgs.config.allowUnfree = true;
-  nixpkgs.config.dmenu.enableXft = true;
-  #nixpkgs.config.zathura.useMupdf = true; # disable to use poppler for rendering
-  nixpkgs.config.firefox = {
-   enableGoogleTalkPlugin = true;
-   enableAdobeFlash = true;
-  };
-  nixpkgs.config.chromium = {
-   enablePepperFlash = true;
-   enablePepperPDF = true;
-  };
+  virtualisation.docker.enable = true;
+  virtualisation.docker.storageDriver = "devicemapper";
 
-  hardware.opengl.driSupport32Bit = true;
+  hardware = {
+    opengl.driSupport32Bit = true;
+    pulseaudio.enable = true;
+    pulseaudio.support32Bit = true;
+  };
 
   programs.light.enable = true;
   programs.gpg-agent.enable = true; # use my gpg-agent setup
   programs.ssh.startAgent = false;
 
   environment.variables = {
-    BROWSER = "chromium-browser:firefox";
+    BROWSER = "chromium-browser";
   };
 
   # Enable the backlight on rMBP
@@ -158,7 +112,6 @@
       extraConfig = ''
         console_cmd ${pkgs.rxvt_unicode_with-plugins}/bin/urxvt -C -fg white -bg black +sb -T "Console login" -e ${pkgs.shadow}/bin/login
       '';
-      #console_cmd ${pkgs.rxvt_unicode_with-plugins}/bin/urxvt -C -fg white -bg black +sb -T "Console login" -e ${pkgs.zsh}/bin/zsh -l
       theme = pkgs.fetchurl {
         url    = "https://github.com/jagajaga/nixos-slim-theme/archive/Final.tar.gz";
         sha256 = "4cab5987a7f1ad3cc463780d9f1ee3fbf43603105e6a6e538e4c2147bde3ee6b";
@@ -198,17 +151,15 @@
     { keys = [ 115 ]; events = [ "key" "rep" ]; command = "${pkgs.alsaUtils}/bin/amixer -q set Master 5+"; }
     { keys = [ 224 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -U 4"; }
     { keys = [ 225 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -A 4"; }
+    { keys = [ 229 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight up"; }
+    { keys = [ 230 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight down"; }
   ];
 
-  networking.wireless.enable = true;
-  networking.wireless.userControlled.enable = true;
-  networking.wireless.interfaces = [ "wlp3s0" ];
-
-  #services.zookeeper.enable = true;
-
+  services.mongodb.enable = true;
+  services.zookeeper.enable = true;
+  services.apache-kafka.enable = true;
   #services.elasticsearch.enable = true;
   #services.memcached.enable = true;
-  #services.mongodb.enable = true;
   #services.redis.enable = true;
 
   # Make sure to run:
@@ -229,17 +180,15 @@
   environment.systemPackages =
     let stdenv = [ pkgs.stdenv.cc pkgs.stdenv.cc.binutils ] ++ pkgs.stdenv.initialPath;
     in [
+    pkgs.hello
     pkgs.chromium
     pkgs.firefoxWrapper
     pkgs.torbrowser
 
     pkgs.glxinfo
     pkgs.wpa_supplicant_gui
-      #pkgs.dropbox
-      #pkgs.dropbox-cli
+    pkgs.dropbox
     pkgs.sublime3
-    #pkgs.xfce.thunar
-    #pkgs.rescuetime
     pkgs.kde4.kcachegrind
     pkgs.deluge
 
@@ -254,10 +203,9 @@
     pkgs.libreoffice
     pkgs.abiword
     pkgs.gimp
-    #pkgs.inkscape
+    pkgs.inkscape
     pkgs.evince
     pkgs.zathura
-    #pkgs.llpp
 
     # work around https://bugs.winehq.org/show_bug.cgi?id=36139
     pkgs.wineUnstable
@@ -277,19 +225,17 @@
     pkgs.scrot
     pkgs.haskellPackages.xmobar
     pkgs.texstudio
-    # diagramming
-    #pkgs.yed
-    #pkgs.dia
-    #pkgs.umbrello
-
-    #stdenv
-    #pkgs.qt5
-    #pkgs.pkgconfig
-    #pkgs.nodejs
-    #pkgs.mesa
+    pkgs.sxiv
 
     # CLI tools
     #pkgs.imagemagick
+    pkgs.urlview
+    pkgs.lynx
+    pkgs.pass
+    pkgs.notmuch
+    pkgs.mutt-kz
+    pkgs.msmtp
+    pkgs.isync
     pkgs.gnupg21
     pkgs.pinentry
     pkgs.strategoPackages.strategoxt
@@ -326,6 +272,7 @@
     pkgs.wget
     pkgs.unzip
     pkgs.hdparm
+    pkgs.libsysfs
     pkgs.iomelt
     pkgs.htop
     pkgs.ctags
@@ -361,7 +308,6 @@
         group           = "users";
         extraGroups     = [ "wheel" "docker" ];
         isNormalUser    = true;
-        #hashedPassword  = lib.replaceChars ["\n"] [""] (builtins.readFile ./passhash);
         passwordFile    = "/etc/nixos/passwords/cstrahan";
         useDefaultShell = false;
         shell           = "/run/current-system/sw/bin/zsh";
@@ -410,9 +356,24 @@
     "30 */1 * * * root nix-pull &>/dev/null http://hydra.nixos.org/jobset/nixpkgs/trunk/channel/latest/MANIFEST"
   ];
 
-  nixpkgs.config.packageOverrides = super: let self = super.pkgs; in rec {
+  nixpkgs.config.allowUnfree = true;
+  nixpkgs.config.dmenu.enableXft = true;
+  nixpkgs.config.firefox = {
+   enableGoogleTalkPlugin = true;
+   enableAdobeFlash = true;
+  };
+  nixpkgs.config.chromium = {
+   enablePepperFlash = true;
+   enablePepperPDF = true;
+  };
+  nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
+    rec {
       linux_3_18 = super.linux_3_18.override {
         kernelPatches = super.linux_3_18.kernelPatches ++ [ self.kernelPatches.ubuntu_fan ];
+      };
+
+      pass = super.pass.override {
+        gnupg = self.gnupg21;
       };
 
       pragmatapro =
@@ -490,4 +451,21 @@
         };
     };
 
+    # https://wiki.archlinux.org/index.php/Systemd/User#D-Bus
+    #systemd.services."user@".environment.DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/user/%I/bus";
+    #systemd.user.sockets."dbus" = {
+    #  description = "D-Bus User Message Bus Socket";
+    #  wantedBy = [ "sockets.target" ];
+    #  socketConfig = {
+    #    ListenStream = "%t/bus";
+    #  };
+    #};
+    #systemd.user.services."dbus" = {
+    #  description = "D-Bus User Message Bus";
+    #  requires = [ "dbus.socket" ];
+    #  serviceConfig = {
+    #    ExecStart = "${pkgs.dbus_daemon}/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation";
+    #    ExecReload = "${pkgs.dbus_daemon}/bin/dbus-send --print-reply --session --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig";
+    #  };
+    #};
 }

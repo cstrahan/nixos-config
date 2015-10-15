@@ -6,5 +6,8 @@ if [ "$(id -u)" != "0" ]; then
 fi
 
 for f in *.nix; do
-  cp $f /etc/nixos/$f -v
+  name=$(basename $f)
+  if [[ $name != "hardware-configuration.nix" ]]; then
+    cp $f /etc/nixos/$name -v
+  fi
 done

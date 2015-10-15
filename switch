@@ -7,4 +7,5 @@ if [ "$(id -u)" != "0" ]; then
    exit 1
 fi
 
-NIX_PATH=nixos-configuration=$DIR/configuration.nix:$NIX_PATH nixos-rebuild switch
+$DIR/push
+nixos-rebuild switch

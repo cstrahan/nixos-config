@@ -7,7 +7,6 @@ let
 
   cfg = config.programs.gpg-agent;
 
-        #. ${config.system.build.setEnvironment}
   startGpgAgent = pkgs.writeScript "start-gpg-agent"
     ''
         #!/bin/sh
