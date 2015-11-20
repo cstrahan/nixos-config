@@ -180,10 +180,11 @@
   environment.systemPackages =
     let stdenv = [ pkgs.stdenv.cc pkgs.stdenv.cc.binutils ] ++ pkgs.stdenv.initialPath;
     in [
-    pkgs.hello
     pkgs.chromium
     pkgs.firefoxWrapper
     pkgs.torbrowser
+    pkgs.idea.idea-community
+    #pkgs.idea.idea-ultimate
 
     pkgs.glxinfo
     pkgs.wpa_supplicant_gui
@@ -206,6 +207,8 @@
     pkgs.inkscape
     pkgs.evince
     pkgs.zathura
+    pkgs.cmus
+    pkgs.sxiv
 
     # work around https://bugs.winehq.org/show_bug.cgi?id=36139
     pkgs.wineUnstable
@@ -225,10 +228,12 @@
     pkgs.scrot
     pkgs.haskellPackages.xmobar
     pkgs.texstudio
-    pkgs.sxiv
+    pkgs.wmctrl
 
     # CLI tools
     #pkgs.imagemagick
+    pkgs.nssTools
+    pkgs.openssl
     pkgs.urlview
     pkgs.lynx
     pkgs.pass
@@ -338,6 +343,7 @@
     enableFontDir = true;
     enableGhostscriptFonts = true;
     fonts = with pkgs; [
+      hack-font
       terminus_font
       anonymousPro
       freefont_ttf
