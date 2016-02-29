@@ -1,8 +1,0 @@
-#!/bin/sh
-
-DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
-
-export NIXOS_CONFIG=$DIR/configuration.nix
-export NIX_PATH=nixos-configuration=$NIXOS_CONFIG:$NIX_PATH
-
-nix-build '<nixpkgs/nixos>' -A config.system.build --no-out-link

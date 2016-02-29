@@ -11,7 +11,7 @@
   ];
 
   # Use the gummiboot efi boot loader.
-  boot.kernelPackages = pkgs.linuxPackages_4_2;
+  #boot.kernelPackages = pkgs.linuxPackages_4_4;
   boot.kernelModules = [ "msr" "coretemp" "applesmc" ];
   boot.loader.gummiboot.enable = true;
   boot.loader.gummiboot.timeout = 8;
@@ -72,6 +72,14 @@
     '';
     serviceConfig.Type = "oneshot";
   };
+
+  #services.printing = {
+  #  enable = true;
+  #  drivers = [
+  #    pkgs.gutenprint
+  #    pkgs.hplip # alternatively: pkgs.hplipWithPlugin
+  #  ];
+  #};
 
   services.mbpfan.enable = true;
   services.xserver = {
@@ -135,6 +143,9 @@
     '';
   };
 
+  #services.gitlab.enable = true;
+  #services.gitlab.databasePassword = "gitlab";
+
   services.dbus.enable = true;
   services.upower.enable = true;
 
@@ -160,7 +171,7 @@
   services.apache-kafka.enable = true;
   #services.elasticsearch.enable = true;
   #services.memcached.enable = true;
-  #services.redis.enable = true;
+  services.redis.enable = true;
 
   # Make sure to run:
   #  sudo createuser -s postgres
@@ -215,6 +226,7 @@
     pkgs.winetricks
 
     # X11 stuff
+    pkgs.termite
     pkgs.rxvt_unicode_with-plugins
     pkgs.anki
     pkgs.taffybar
@@ -267,7 +279,7 @@
     pkgs.awscli
     pkgs.peco
     pkgs.stunnel
-    pkgs.colordiff
+    #pkgs.colordiff # TODO: fix url in nixpkgs
     pkgs.ncdu
     pkgs.graphviz
     pkgs.gtypist
@@ -280,7 +292,6 @@
     pkgs.libsysfs
     pkgs.iomelt
     pkgs.htop
-    pkgs.ctags
     pkgs.jq
     pkgs.binutils
     pkgs.psmisc
@@ -288,6 +299,8 @@
     pkgs.silver-searcher
     pkgs.vimHuge
     pkgs.git
+    pkgs.cvs
+    pkgs.cvs_fast_export
     pkgs.bazaar
     pkgs.mercurialFull
     pkgs.darcs
@@ -297,6 +310,27 @@
     pkgs.nix-prefetch-scripts
     pkgs.mc
     pkgs.watchman
+    pkgs.emacs
+    pkgs.ctags
+    pkgs.global
+    #pkgs.rtags
+    (pkgs.w3m.override { graphicsSupport = true; mouseSupport = true; })
+    pkgs.jdk
+    pkgs.leiningen
+
+    pkgs.vanilla-dmz
+
+    #pkgs.gitinspector
+    pkgs.lr
+    pkgs.xe
+    pkgs.nq
+    pkgs.taskwarrior
+    pkgs.pagemon
+    pkgs.rofi
+    #pkgs.exa
+    pkgs.vnstat
+    # clipgrab diffoscope aws-shell
+    # playerctl
   ];
 
   environment.shells = [
@@ -358,8 +392,6 @@
 
   services.cron.systemCronJobs = [
     "0 2 * * * root fstrim /"
-    # Keep up to date on substitutes
-    "30 */1 * * * root nix-pull &>/dev/null http://hydra.nixos.org/jobset/nixpkgs/trunk/channel/latest/MANIFEST"
   ];
 
   nixpkgs.config.allowUnfree = true;
@@ -374,9 +406,13 @@
   };
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
-      linux_3_18 = super.linux_3_18.override {
-        kernelPatches = super.linux_3_18.kernelPatches ++ [ self.kernelPatches.ubuntu_fan ];
-      };
+      #linux_3_18 = super.linux_3_18.override {
+      #  kernelPatches = super.linux_3_18.kernelPatches ++ [ self.kernelPatches.ubuntu_fan ];
+      #};
+      #linux_4_4 = super.linux_4_4.override {
+      #  kernelPatches = super.linux_4_4.kernelPatches ++ [ self.kernelPatches.ubuntu_fan_4 ];
+      #};
+      linuxPackages = self.linuxPackages_4_4;
 
       pass = super.pass.override {
         gnupg = self.gnupg21;

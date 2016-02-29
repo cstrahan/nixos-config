@@ -1,8 +1,0 @@
-#!/bin/sh
-
-for f in /etc/nixos/*.nix; do
-  name=$(basename $f)
-  if [[ $name != "hardware-configuration.nix" ]]; then
-    cp $f $name --no-preserve=ownership -v
-  fi
-done
