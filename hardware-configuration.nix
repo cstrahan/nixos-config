@@ -23,7 +23,7 @@
   fileSystems."/" =
     { device = "/dev/disk/by-uuid/28f2cdef-f8de-4ed5-9d42-4269fc2edc2a";
       fsType = "btrfs";
-      options = "noatime";
+      options = [ "noatime" ];
     };
 
   fileSystems."/boot" =
