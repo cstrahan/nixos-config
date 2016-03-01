@@ -321,6 +321,7 @@
     pkgs.vanilla-dmz
 
     #pkgs.gitinspector
+    pkgs.arandr
     pkgs.lr
     pkgs.xe
     pkgs.nq
