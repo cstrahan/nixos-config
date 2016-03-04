@@ -107,6 +107,11 @@
     synaptics.minSpeed = "0.95";
     synaptics.maxSpeed = "1.15";
     synaptics.palmDetect = true;
+    # seems to default to 70 and 75
+    synaptics.additionalOptions = ''
+      Option "FingerLow" "80"
+      Option "FingerHigh" "85"
+    '';
 
     #desktopManager.kde4.enable = true;
     #displayManager.kdm.enable = true;
