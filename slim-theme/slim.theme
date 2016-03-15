@@ -10,14 +10,14 @@ username_msg            Username:
 password_msg            Password:
 
 background_style        tile
-msg_color               #002b36
-background_color        #002b36
-username_color          #002b36
-session_color           #002b36
+msg_color               #fdf6e3
+background_color        #fdf6e3
+username_color          #fdf6e3
+session_color           #fdf6e3
 input_color             #fdf6e3
 
 msg_x                   50%
-msg_y                   70%
+msg_y                   60%
 input_panel_x           50%
 input_panel_y           50%
 input_name_x            52
@@ -25,6 +25,6 @@ input_name_y            214
 input_pass_x            -1
 input_pass_y            -1
 username_x              50
-username_y              190
+username_y              20
 password_x              50
 password_y              190
