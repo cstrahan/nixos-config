@@ -1,0 +1,24 @@
+Notes on my attempts to make XMonad + GNOME work.
+
+* $GDM_SESSIONS_DIR, set in pkgs/desktops/gnome-3/3.18/core/gdm/sessions_dir.patch
+
+* which is set in to:
+  config.services.xserver.displayManager.session.desktops
+
+* services.xserver.desktopManager.gnome3.sessionPath
+  Probably is what I want to use to specify my own xmonad session.
+  Appends to XDG_DATA_DIRS.
+
+* session search path: XDG_CONFIG_HOME, XDG_CONFIG_DIRS, XDG_DATA_DIRS
+
+* Getting this error in ~/.xsession-errors:
+  Failure: Module initialization failed
+  /nix/store/jpnilb1586ynfz0lm2csd6caksbbw057-xsession: Window manager 'gnome3' not found.
+
+* gsettings suddenly started segfaulting :(
+
+gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:nocaps']"
+gsettings set org.gnome.settings-daemon.peripherals.keyboard repeat-interval 220
+gsettings set org.gnome.settings-daemon.peripherals.keyboard delay 50
+gsettings set org.gnome.desktop.interface scaling-factor 1 # don't auto-detect scaling (0)
+gsettings set org.gnome.desktop.interface text-scaling-factor 1
