@@ -27,12 +27,14 @@
   time.timeZone = "US/Eastern";
   i18n.consoleUseXkbConfig = true;
 
-  services.printing.enable = true;
-
   networking.hostName = "cstrahan-mbp-nixos"; # Define your hostname.
   networking.hostId = "0ae2b4e1";
   networking.networkmanager.enable = lib.mkForce true;
   networking.wireless.enable = lib.mkForce false;
+  networking.firewall.enable = false;
+  networking.firewall.allowedUDPPorts = [
+    631 # IPP - printer discovery
+  ];
 
   virtualisation.docker.enable = true;
   virtualisation.docker.storageDriver = "devicemapper";
@@ -47,9 +49,17 @@
   programs.gpg-agent.enable = true; # use my gpg-agent setup
   programs.ssh.startAgent = false;
 
+  services.logind.extraConfig = ''
+    HandlePowerKey=suspend
+  '';
+
   environment.variables = {
     BROWSER = "chromium-browser";
   };
+
+  #environment.etc."fuse.conf".text = ''
+  #  user_allow_other
+  #'';
 
   # Enable the backlight on rMBP
   # Disable USB-based wakeup
@@ -73,13 +83,16 @@
     serviceConfig.Type = "oneshot";
   };
 
-  #services.printing = {
-  #  enable = true;
-  #  drivers = [
-  #    pkgs.gutenprint
-  #    pkgs.hplip # alternatively: pkgs.hplipWithPlugin
-  #  ];
-  #};
+  services.printing = {
+    enable = true;
+    #gutenprint = true; # need newer release to use this.
+    drivers = [
+      pkgs.gutenprint
+      pkgs.cups-bjnp
+      #pkgs.gutenprintBin # Canon PIXMA, etc.
+      pkgs.hplip # alternatively: pkgs.hplipWithPlugin
+    ];
+  };
 
   services.mbpfan.enable = true;
   services.xserver = {
@@ -125,12 +138,8 @@
       extraConfig = ''
         console_cmd ${pkgs.rxvt_unicode_with-plugins}/bin/urxvt -C -fg white -bg black +sb -T "Console login" -e ${pkgs.shadow}/bin/login
       '';
-      theme = pkgs.fetchurl {
-        url    = "https://github.com/jagajaga/nixos-slim-theme/archive/Final.tar.gz";
-        sha256 = "4cab5987a7f1ad3cc463780d9f1ee3fbf43603105e6a6e538e4c2147bde3ee6b";
-      };
+      theme = ./slim-theme;
     };
-    displayManager.desktopManagerHandlesLidAndPower = false;
     windowManager.default = "xmonad";
     windowManager.xmonad.enable = true;
     windowManager.xmonad.extraPackages = hpkgs: [
@@ -319,12 +328,16 @@
     pkgs.ctags
     pkgs.global
     #pkgs.rtags
-    (pkgs.w3m.override { graphicsSupport = true; mouseSupport = true; })
+    pkgs.w3m-full
     pkgs.jdk
     pkgs.leiningen
 
     pkgs.vanilla-dmz
 
+    pkgs.fuse
+    pkgs.sshfsFuse
+
+    # pkgs.gtk-icons
     #pkgs.gitinspector
     pkgs.arandr
     pkgs.lr
@@ -351,7 +364,7 @@
         uid             = 2000;
         name            = "cstrahan";
         group           = "users";
-        extraGroups     = [ "wheel" "docker" ];
+        extraGroups     = [ "wheel" "docker" "fuse" ];
         isNormalUser    = true;
         passwordFile    = "/etc/nixos/passwords/cstrahan";
         useDefaultShell = false;
@@ -408,7 +421,7 @@
   };
   nixpkgs.config.chromium = {
    enablePepperFlash = true;
-   enablePepperPDF = true;
+   enableWideVine = true;
   };
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
