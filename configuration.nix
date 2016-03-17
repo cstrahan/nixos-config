@@ -53,6 +53,9 @@
     HandlePowerKey=suspend
   '';
 
+  # Needed for GTK themes.
+  environment.pathsToLink = [ "/share" ];
+
   environment.variables = {
     BROWSER = "chromium-browser";
   };
@@ -85,12 +88,10 @@
 
   services.printing = {
     enable = true;
-    #gutenprint = true; # need newer release to use this.
+    gutenprint = true;
     drivers = [
-      pkgs.gutenprint
       pkgs.cups-bjnp
-      #pkgs.gutenprintBin # Canon PIXMA, etc.
-      pkgs.hplip # alternatively: pkgs.hplipWithPlugin
+      pkgs.hplip
     ];
   };
 
@@ -149,7 +150,17 @@
     ];
 
     displayManager.sessionCommands = ''
+      # Set GTK_DATA_PREFIX so that GTK+ can find the themes
+      export GTK_DATA_PREFIX=${config.system.path}
+
+      # find theme engines
+      export GTK_PATH=${config.system.path}/lib/gtk-3.0:${config.system.path}/lib/gtk-2.0
+
+      # Find the mouse
+      export XCURSOR_PATH=~/.icons:~/.nix-profile/share/icons:/var/run/current-system/sw/share/icons
+
       ${pkgs.xorg.xset}/bin/xset r rate 220 50
+
       if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
         eval "$(${pkgs.dbus.tools}/bin/dbus-launch --sh-syntax --exit-with-session)"
         export DBUS_SESSION_BUS_ADDRESS
@@ -171,13 +182,10 @@
 
   services.actkbd.enable = true;
   services.actkbd.bindings = [
-    { keys = [ 113 ]; events = [ "key" ]; command = "${pkgs.alsaUtils}/bin/amixer -q set Master toggle"; }
-    { keys = [ 114 ]; events = [ "key" "rep" ]; command = "${pkgs.alsaUtils}/bin/amixer -q set Master 5-"; }
-    { keys = [ 115 ]; events = [ "key" "rep" ]; command = "${pkgs.alsaUtils}/bin/amixer -q set Master 5+"; }
     { keys = [ 224 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -U 4"; }
     { keys = [ 225 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -A 4"; }
-    { keys = [ 229 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight up"; }
-    { keys = [ 230 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight down"; }
+    { keys = [ 229 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight down"; }
+    { keys = [ 230 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight up"; }
   ];
 
   services.mongodb.enable = true;
@@ -255,6 +263,9 @@
     pkgs.haskellPackages.xmobar
     pkgs.texstudio
     pkgs.wmctrl
+    pkgs.compton
+    pkgs.xorg.xev
+    pkgs.xorg.xprop
 
     # CLI tools
     #pkgs.imagemagick
@@ -337,7 +348,11 @@
     pkgs.fuse
     pkgs.sshfsFuse
 
-    # pkgs.gtk-icons
+    pkgs.gtk # To get GTK+'s themes.
+    pkgs.hicolor_icon_theme
+    pkgs.tango-icon-theme
+    pkgs.shared_mime_info
+
     #pkgs.gitinspector
     pkgs.arandr
     pkgs.lr
