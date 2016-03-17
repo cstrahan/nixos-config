@@ -242,6 +242,8 @@
     pkgs.zathura
     pkgs.cmus
     pkgs.sxiv
+    pkgs.exiv2
+    #pkgs.imagemagick
 
     # work around https://bugs.winehq.org/show_bug.cgi?id=36139
     pkgs.wineUnstable
@@ -266,9 +268,9 @@
     pkgs.compton
     pkgs.xorg.xev
     pkgs.xorg.xprop
+    pkgs.sxhkd
 
     # CLI tools
-    #pkgs.imagemagick
     pkgs.nssTools
     pkgs.openssl
     pkgs.urlview
@@ -352,6 +354,8 @@
     pkgs.hicolor_icon_theme
     pkgs.tango-icon-theme
     pkgs.shared_mime_info
+
+    pkgs.networkmanagerapplet
 
     #pkgs.gitinspector
     pkgs.arandr
