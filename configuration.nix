@@ -58,6 +58,7 @@
 
   environment.variables = {
     BROWSER = "chromium-browser";
+    SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   };
 
   #environment.etc."fuse.conf".text = ''
@@ -95,7 +96,7 @@
     ];
   };
 
-  services.mbpfan.enable = true;
+  #services.mbpfan.enable = true; # seems to have stopped working recently...
   services.xserver = {
     enable = true;
     startGnuPGAgent = false;
