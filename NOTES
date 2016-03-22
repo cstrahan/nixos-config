@@ -1,0 +1,25 @@
+* More GTK stuff:
+  * https://github.com/jb55/nix-files/blob/f6eb549990eda55aaaef4375c3d18b97904e4a43/environment/desktop/default.nix#L3-L24
+
+Fix tearing:
+  * http://duncanlock.net/blog/2013/06/07/how-to-switch-to-compton-for-beautiful-tear-free-compositing-in-xfce/
+  * https://bbs.archlinux.org/viewtopic.php?id=161403
+  * https://www.reddit.com/r/linux/comments/1dnr2l/using_compton_for_simple_tearfree_compositing_in/?buffer_share=d6a46
+  * https://help.ubuntu.com/community/NvidiaResolutionXorgConf
+    * Note that modelines shouldn't be needed, now that there's EDID,
+      although some people have broken EDID.
+
+Look into:
+  * xsettingsd
+  * sxhkd
+
+Lock computer when sleeping:
+  * https://bbs.archlinux.org/viewtopic.php?id=169587
+
+Look into XCompose for math symbols:
+
+  Do something like:
+
+    export GTK_IM_MODULE = "xim"
+    export XCOMPOSEFILE = "/etc/XCompose"
+
