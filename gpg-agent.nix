@@ -1,6 +1,9 @@
 # inspired by: https://github.com/ttuegel/nixos-config/blob/master/gpg-agent.nix
 { config, lib, pkgs, ... }:
 
+# See also:
+# https://github.com/NixOS/nixpkgs/commit/5391882ebd781149e213e8817fba6ac3c503740c
+
 with lib;
 
 let
