@@ -122,6 +122,7 @@
     synaptics.minSpeed = "0.95";
     synaptics.maxSpeed = "1.15";
     synaptics.palmDetect = true;
+    synaptics.palmMinWidth = 8;
     # seems to default to 70 and 75
     synaptics.additionalOptions = ''
       Option "FingerLow" "80"
