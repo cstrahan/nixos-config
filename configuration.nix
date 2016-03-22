@@ -338,6 +338,7 @@
     pkgs.nix-prefetch-scripts
     pkgs.mc
     pkgs.watchman
+    pkgs.pythonPackages.pywatchman
     pkgs.emacs
     pkgs.ctags
     pkgs.global
