@@ -7,7 +7,6 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./gpg-agent.nix
   ];
 
   # Use the gummiboot efi boot loader.
@@ -46,8 +45,7 @@
   };
 
   programs.light.enable = true;
-  programs.gpg-agent.enable = true; # use my gpg-agent setup
-  programs.ssh.startAgent = false;
+  programs.ssh.startAgent = false; # we'll use GPG from ~/.xsession
 
   services.logind.extraConfig = ''
     HandlePowerKey=suspend
@@ -57,7 +55,7 @@
   environment.pathsToLink = [ "/share" ];
 
   environment.variables = {
-    BROWSER = "chromium-browser";
+    BROWSER = "google-chrome-stable";
     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   };
 
@@ -99,7 +97,6 @@
   #services.mbpfan.enable = true; # seems to have stopped working recently...
   services.xserver = {
     enable = true;
-    startGnuPGAgent = false;
     autorun = true;
     videoDrivers = [ "nvidia" ];
     xkbOptions = "ctrl:nocaps";
@@ -122,7 +119,7 @@
     synaptics.minSpeed = "0.95";
     synaptics.maxSpeed = "1.15";
     synaptics.palmDetect = true;
-    synaptics.palmMinWidth = 8;
+    synaptics.palmMinWidth = 10;
     # seems to default to 70 and 75
     synaptics.additionalOptions = ''
       Option "FingerLow" "80"
@@ -215,7 +212,8 @@
   environment.systemPackages =
     let stdenv = [ pkgs.stdenv.cc pkgs.stdenv.cc.binutils ] ++ pkgs.stdenv.initialPath;
     in [
-    pkgs.chromium
+    pkgs.google-chrome
+    #pkgs.chromium
     pkgs.firefoxWrapper
     pkgs.torbrowser
     pkgs.idea.idea-community
@@ -273,6 +271,7 @@
     pkgs.sxhkd
 
     # CLI tools
+    pkgs.mosh
     pkgs.nssTools
     pkgs.openssl
     pkgs.urlview
@@ -347,6 +346,7 @@
     pkgs.w3m-full
     pkgs.jdk
     pkgs.leiningen
+    #pkgs.tweak
 
     pkgs.vanilla-dmz
 
