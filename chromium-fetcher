@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+# Make sure the download dir exists
+downloadDir=$HOME/Downloads/chrome
+mkdir -p $downloadDir
+
+# get the version of chromium from master
+version=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs/pkgs/applications/networking/browsers/chromium/upstream-info.nix>' -A stable.version)
+version=${version:1:${#version}-2}
+
+sha256=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs/pkgs/applications/networking/browsers/chromium/upstream-info.nix>' -A stable.sha256)
+sha256=${sha256:1:${#sha256}-2}
+
+sha256bin=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs/pkgs/applications/networking/browsers/chromium/upstream-info.nix>' -A stable.sha256bin64)
+sha256bin=${sha256bin:1:${#sha256bin}-2}
+
+bucketURL="https://commondatastorage.googleapis.com/chromium-browser-official"
+srcUrl="${bucketURL}/chromium-${version}.tar.xz"
+
+if [ ! -e "$HOME/Downloads/$(basename $srcUrl)" ]; then
+  path=$(nix-prefetch-url "$srcUrl" "$sha256" --print-path | tail -n 1)
+  cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $srcUrl)"
+fi
+
+arch=amd64
+packageSuffix=stable
+packageName="google-chrome-${packageSuffix}"
+mirror="https://dl.google.com/linux/chrome/deb/pool/main/g"
+binUrl="${mirror}/${packageName}/${packageName}_${version}-1_${arch}.deb"
+
+if [ ! -e "$HOME/Downloads/$(basename $binUrl)" ]; then
+  path=$(nix-prefetch-url "$binUrl" "$sha256bin" --print-path | tail -n 1)
+  cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $binUrl)"
+fi
