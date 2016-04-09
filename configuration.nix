@@ -256,6 +256,7 @@
     pkgs.taffybar
     pkgs.dmenu2
     pkgs.xautolock
+    pkgs.xss-lock
     pkgs.xsel
     pkgs.xclip
     pkgs.xlsfonts
