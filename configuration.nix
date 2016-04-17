@@ -271,8 +271,11 @@
     pkgs.xorg.xev
     pkgs.xorg.xprop
     pkgs.sxhkd
+    pkgs.rofi
+    pkgs.arandr
 
     # CLI tools
+    pkgs.iw
     pkgs.mosh
     pkgs.nssTools
     pkgs.openssl
@@ -364,13 +367,11 @@
     pkgs.blueman
 
     #pkgs.gitinspector
-    pkgs.arandr
     pkgs.lr
     pkgs.xe
     pkgs.nq
     pkgs.taskwarrior
     pkgs.pagemon
-    pkgs.rofi
     #pkgs.exa
     pkgs.vnstat
     # clipgrab diffoscope aws-shell
