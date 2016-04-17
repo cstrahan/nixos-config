@@ -389,7 +389,7 @@
         uid             = 2000;
         name            = "cstrahan";
         group           = "users";
-        extraGroups     = [ "wheel" "docker" "fuse" ];
+        extraGroups     = [ "wheel" "networkmanager" "docker" "fuse" ];
         isNormalUser    = true;
         passwordFile    = "/etc/nixos/passwords/cstrahan";
         useDefaultShell = false;
