@@ -14,3 +14,7 @@
     serviceConfig.Type = "oneshot";
   };
 }
+
+# TODO:
+# * maybe use /sys/class/net/* to find all interfaces, and try to do power_save
+#   on each.
