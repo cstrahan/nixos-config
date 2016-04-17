@@ -361,6 +361,7 @@
     pkgs.shared_mime_info
 
     pkgs.networkmanagerapplet
+    pkgs.blueman
 
     #pkgs.gitinspector
     pkgs.arandr
