@@ -7,13 +7,15 @@
 {
   imports = [
     ./hardware-configuration.nix
+    ./nginx.nix
   ];
 
   # Use the gummiboot efi boot loader.
+  #boot.kernelPatches = [ pkgs.kernelPatches.ubuntu_fan_4_4 ];
   #boot.kernelPackages = pkgs.linuxPackages_4_4;
   boot.kernelModules = [ "msr" "coretemp" "applesmc" ];
-  boot.loader.gummiboot.enable = true;
-  boot.loader.gummiboot.timeout = 8;
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.timeout = 8;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.kernel.sysctl = {
     # Note that inotify watches consume 1kB on 64-bit machines.
@@ -39,6 +41,7 @@
   virtualisation.docker.storageDriver = "devicemapper";
 
   hardware = {
+    facetimehd.enable = true;
     opengl.driSupport32Bit = true;
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
@@ -92,6 +95,7 @@
     drivers = [
       pkgs.cups-bjnp
       pkgs.hplip
+      pkgs.cnijfilter2
     ];
   };
 
@@ -162,7 +166,7 @@
       ${pkgs.xorg.xset}/bin/xset r rate 220 50
 
       if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
-        eval "$(${pkgs.dbus.tools}/bin/dbus-launch --sh-syntax --exit-with-session)"
+        eval "$(${pkgs.dbus.out}/bin/dbus-launch --sh-syntax --exit-with-session)"
         export DBUS_SESSION_BUS_ADDRESS
       fi
     '';
@@ -194,6 +198,7 @@
   #services.elasticsearch.enable = true;
   #services.memcached.enable = true;
   services.redis.enable = true;
+  systemd.services.redis.serviceConfig.LimitNOFILE = 10032;
 
   # Make sure to run:
   #  sudo createuser -s postgres
@@ -275,6 +280,7 @@
     pkgs.arandr
 
     # CLI tools
+    #pkgs.ranger
     pkgs.iw
     pkgs.mosh
     pkgs.nssTools
@@ -288,7 +294,6 @@
     pkgs.isync
     pkgs.gnupg21
     pkgs.pinentry
-    pkgs.strategoPackages.strategoxt
     pkgs.lsof
     pkgs.usbutils
     pkgs.xidel
@@ -353,8 +358,6 @@
     pkgs.leiningen
     #pkgs.tweak
 
-    pkgs.vanilla-dmz
-
     pkgs.fuse
     pkgs.sshfsFuse
 
@@ -362,9 +365,11 @@
     pkgs.hicolor_icon_theme
     pkgs.tango-icon-theme
     pkgs.shared_mime_info
+    pkgs.vanilla-dmz
 
     pkgs.networkmanagerapplet
     pkgs.blueman
+    pkgs.pavucontrol
 
     #pkgs.gitinspector
     pkgs.lr
@@ -399,7 +404,7 @@
     ];
   };
 
-  nix.useChroot = true;
+  nix.useSandbox = true;
   nix.extraOptions = ''
     gc-keep-outputs = true
   '';
@@ -452,9 +457,9 @@
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
       #iproute = super.iproute.override { enableFan = true; };
-      linux_4_4 = super.linux_4_4.override {
-        kernelPatches = super.linux_4_4.kernelPatches ++ [ self.kernelPatches.ubuntu_fan_4_4 ];
-      };
+      #linux_4_4 = super.linux_4_4.override {
+      #  kernelPatches = super.linux_4_4.kernelPatches ++ [ self.kernelPatches.ubuntu_fan_4_4 ];
+      #};
 
       pass = super.pass.override {
         gnupg = self.gnupg21;

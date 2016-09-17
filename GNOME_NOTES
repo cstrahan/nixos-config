@@ -22,3 +22,5 @@ gsettings set org.gnome.settings-daemon.peripherals.keyboard repeat-interval 220
 gsettings set org.gnome.settings-daemon.peripherals.keyboard delay 50
 gsettings set org.gnome.desktop.interface scaling-factor 1 # don't auto-detect scaling (0)
 gsettings set org.gnome.desktop.interface text-scaling-factor 1
+gsettings set org.gnome.desktop.interface cursor-size 48
+gsettings set org.gnome.desktop.interface cursor-theme Vanilla-DMZ-AA

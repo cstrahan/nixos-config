@@ -18,3 +18,5 @@
 # TODO:
 # * maybe use /sys/class/net/* to find all interfaces, and try to do power_save
 #   on each.
+# * maybe check /sys/devices/system/cpu/*/cpufreq/scaling_available_governors
+#   to use the correct scaling governor.
