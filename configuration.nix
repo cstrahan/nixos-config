@@ -491,15 +491,17 @@
         stdenv.mkDerivation rec {
           name = "vim-${version}";
 
-          version = "7.4.827";
+          version = "7.4.1585";
 
           dontStrip = 1;
+
+          hardeningDisable = [ "fortify" ];
 
           src = fetchFromGitHub {
             owner = "vim";
             repo = "vim";
             rev = "v${version}";
-            sha256 = "1m34s2hsc5lcish6gmvn2iwaz0k7jc3kg9q4nf30fj9inl7gaybs";
+            sha256 = "1kjdwpka269i4cyl0rmnmzg23dl26g65k26h32w8ayzfm3kbj123";
           };
 
           buildInputs = [
