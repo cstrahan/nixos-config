@@ -468,6 +468,30 @@
         gnupg = self.gnupg21;
       };
 
+      # use the latest xsel because of bugs
+      xsel = self.stdenv.mkDerivation rec {
+        name = "xsel-${version}";
+
+        version = "git-2016-09-02";
+
+        src = self.fetchFromGitHub {
+          owner = "kfish";
+          repo = "xsel";
+          rev = "aa7f57eed805adb09e9c59c8ea841870e8206b81";
+          sha256 = "04mrc8j0rr7iy1k6brfxnx26pmxm800gh4nqrxn6j2lz6vd5y9m5";
+        };
+
+        buildInputs = [ self.xlibsWrapper self.autoreconfHook ];
+
+        postUnpack = ''
+          mv $sourceRoot/README{.md,}
+        '';
+
+        meta = {
+          platforms = self.stdenv.lib.platforms.unix;
+        };
+      };
+
       pragmatapro =
         self.stdenv.mkDerivation rec {
           version = "0.820";
