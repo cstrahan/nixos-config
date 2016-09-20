@@ -449,6 +449,9 @@
   nixpkgs.config.firefox = {
    enableGoogleTalkPlugin = true;
    enableAdobeFlash = true;
+   enableAdobeFlashDRM = true;
+   jre = false;
+   icedtea = true;
   };
   nixpkgs.config.chromium = {
    enablePepperFlash = true;
