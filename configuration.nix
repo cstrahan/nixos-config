@@ -459,10 +459,10 @@
   };
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
-      #iproute = super.iproute.override { enableFan = true; };
-      #linux_4_4 = super.linux_4_4.override {
-      #  kernelPatches = super.linux_4_4.kernelPatches ++ [ self.kernelPatches.ubuntu_fan_4_4 ];
-      #};
+      iproute = super.iproute.override { enableFan = true; };
+      linux_4_4 = super.linux_4_4.override {
+        kernelPatches = super.linux_4_4.kernelPatches ++ [ self.kernelPatches.ubuntu_fan_4_4 ];
+      };
 
       pass = super.pass.override {
         gnupg = self.gnupg21;
