@@ -218,6 +218,9 @@
   environment.systemPackages =
     let stdenv = [ pkgs.stdenv.cc pkgs.stdenv.cc.binutils ] ++ pkgs.stdenv.initialPath;
     in [
+    # man pages
+    pkgs.man-pages
+
     pkgs.google-chrome
     #pkgs.chromium
     pkgs.firefoxWrapper
