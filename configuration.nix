@@ -114,6 +114,9 @@
     videoDrivers = [ "nvidia" ];
     xkbOptions = "ctrl:nocaps";
 
+    autoRepeatDelay = 200;
+    autoRepeatInterval = 33; # 30hz
+
     deviceSection = ''
       Option   "NoLogo"         "TRUE"
       Option   "DPI"            "96 x 96"
