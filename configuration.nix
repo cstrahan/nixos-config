@@ -27,6 +27,14 @@
   # Select internationalisation properties.
   time.timeZone = "US/Eastern";
   i18n.consoleUseXkbConfig = true;
+  i18n.inputMethod = {
+    enabled = "ibus";
+    ibus.engines = with pkgs.ibus-engines; [
+      table
+      table-others # for LaTeX input
+      uniemoji # ibus 1.5.14 has emoji support, so maybe not necessary
+    ];
+  };
 
   networking.hostName = "cstrahan-mbp-nixos"; # Define your hostname.
   networking.hostId = "0ae2b4e1";
@@ -364,7 +372,7 @@
     pkgs.fuse
     pkgs.sshfsFuse
 
-    pkgs.gtk # To get GTK+'s themes.
+    pkgs.gtk2 # To get GTK+'s themes.
     pkgs.hicolor_icon_theme
     pkgs.tango-icon-theme
     pkgs.shared_mime_info
@@ -537,7 +545,7 @@
           buildInputs = [
             pkgconfig gettext glib
             libX11 libXext libSM libXpm libXt libXaw libXau libXmu libICE
-            gtk ncurses
+            gtk2 ncurses
             cscope
             python2Full ruby luajit perl tcl
           ];
