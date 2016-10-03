@@ -438,6 +438,18 @@
     enableFontDir = true;
     enableGhostscriptFonts = true;
     fonts = with pkgs; [
+      pragmatapro
+      proggyfonts
+
+      emojione
+      noto-fonts
+      noto-fonts-cjk
+      noto-fonts-emoji
+      fira
+      fira-code
+      fira-mono
+      font-droid
+
       hack-font
       terminus_font
       anonymousPro
@@ -447,7 +459,6 @@
       inconsolata
       ubuntu_font_family
       ttf_bitstream_vera
-      pragmatapro
     ];
   };
 
