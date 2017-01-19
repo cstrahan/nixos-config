@@ -7,7 +7,8 @@
 # Per-machine settings.
 let
   meta = import ./meta.nix;
-  isMBP = meta.hostname == "cstrahan-mbp-nixos" || "cstrahan-work-mbp-nixos";
+  isMBP = meta.hostname == "cstrahan-mbp-nixos"
+       || meta.hostname == "cstrahan-work-mbp-nixos";
 
 in
 
