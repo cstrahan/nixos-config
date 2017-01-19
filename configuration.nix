@@ -4,6 +4,13 @@
 
 { config, lib, pkgs, ... }:
 
+# Per-machine settings.
+let
+  meta = import ./meta.nix;
+  isMBP = meta.hostname == "cstrahan-mbp-nixos" || "cstrahan-work-mbp-nixos";
+
+in
+
 {
   imports = [
     ./hardware-configuration.nix
@@ -13,7 +20,10 @@
   # Use the gummiboot efi boot loader.
   #boot.kernelPatches = [ pkgs.kernelPatches.ubuntu_fan_4_4 ];
   #boot.kernelPackages = pkgs.linuxPackages_4_4;
-  boot.kernelModules = [ "msr" "coretemp" "applesmc" ];
+  boot.kernelModules = [ "msr" "coretemp" ] ++ lib.optional isMBP "applesmc";
+  boot.blacklistedKernelModules =
+    # make my desktop use the `wl` module for WiFi.
+    lib.optionals (!isMBP) [ "b43" "bcma" "bcma-pci-bridge" ];
   boot.loader.systemd-boot.enable = true;
   boot.loader.timeout = 8;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -32,11 +42,12 @@
     ibus.engines = with pkgs.ibus-engines; [
       table
       table-others # for LaTeX input
+      m17n
       uniemoji # ibus 1.5.14 has emoji support, so maybe not necessary
     ];
   };
 
-  networking.hostName = "cstrahan-mbp-nixos"; # Define your hostname.
+  networking.hostName = meta.hostname;
   networking.hostId = "0ae2b4e1";
   networking.networkmanager.enable = lib.mkForce true;
   networking.wireless.enable = lib.mkForce false;
@@ -211,6 +222,22 @@
   services.redis.enable = true;
   systemd.services.redis.serviceConfig.LimitNOFILE = 10032;
 
+  services.mesos.master = {
+    advertiseIp = "127.0.0.1";
+    enable = true;
+    zk = "zk://localhost:2181/mesos";
+  };
+
+  services.mesos.slave = {
+    enable = true;
+    ip = "127.0.0.1";
+    master = "127.0.0.1:5050";
+    dockerRegistry = "/tmp/mesos/images/docker";
+    executorEnvironmentVariables = {
+      PATH = "/run/current-system/sw/bin";
+    };
+  };
+
   # Make sure to run:
   #  sudo createuser -s postgres
   #
@@ -295,6 +322,8 @@
 
     # CLI tools
     #pkgs.ranger
+    pkgs.python2Packages.docker_compose
+    pkgs.sshpass
     pkgs.iw
     pkgs.mosh
     pkgs.nssTools
@@ -303,7 +332,7 @@
     pkgs.lynx
     pkgs.pass
     pkgs.notmuch
-    pkgs.mutt-kz
+    pkgs.neomutt
     pkgs.msmtp
     pkgs.isync
     pkgs.gnupg21
@@ -371,6 +400,8 @@
     pkgs.jdk
     pkgs.leiningen
     #pkgs.tweak
+    pkgs.asciinema
+    pkgs.mongodb-tools
 
     pkgs.fuse
     pkgs.sshfsFuse

@@ -1,3 +1,11 @@
+# About
+
+My personal NixOS configuration.
+
 # Example
 
-nixos-rebuild build -I nixpkgs=$(cat nixpkgs) -I nixos-config=$PWD/configuration.nix
+```
+echo '{ hostname = "<HOSTNAME>"; }' > meta.nix
+
+nixos-rebuild build -I nixpkgs=$HOME/src/nixpkgs -I nixos-config=$PWD/configuration.nix
+```
