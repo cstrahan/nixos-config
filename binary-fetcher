@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "Fetching chrome . . ."
+
 # Make sure the download dir exists
 downloadDir=$HOME/Downloads/chrome
 mkdir -p $downloadDir
@@ -32,3 +34,17 @@ if [ ! -e "$HOME/Downloads/$(basename $binUrl)" ]; then
   path=$(nix-prefetch-url "$binUrl" "$sha256bin" --print-path | tail -n 1)
   cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $binUrl)"
 fi
+
+
+#-------------------------------------------------------------------------------
+
+echo "Fetching spotify . . ."
+
+# Make sure the download dir exists
+downloadDir=$HOME/Downloads/spotify
+mkdir -p $downloadDir
+
+url=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs>' -A pkgs.spotify.src.urls)
+url=${url:3:${#url}-6}
+path=$(nix-prefetch-url "$url" --print-path | tail -n 1)
+cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $path | perl -pe 's|(.*?-)(.*)|\2|')"
