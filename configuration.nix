@@ -70,9 +70,11 @@ in
   programs.light.enable = true;
   programs.ssh.startAgent = false; # we'll use GPG from ~/.xsession
 
-  services.logind.extraConfig = ''
-    HandlePowerKey=suspend
-  '';
+  services.logind.extraConfig =
+    # I hate accidentally hitting the power key and watching my laptop die ...
+    lib.optionalString isMBP ''
+      HandlePowerKey=suspend
+    '';
 
   # Needed for GTK themes.
   environment.pathsToLink = [ "/share" ];
