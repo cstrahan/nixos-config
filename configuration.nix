@@ -9,6 +9,8 @@ let
   meta = import ./meta.nix;
   isMBP = meta.hostname == "cstrahan-mbp-nixos"
        || meta.hostname == "cstrahan-work-mbp-nixos";
+  isWork = meta.hostname == "cstrahan-work-mbp-nixos";
+  isNvidia = meta.productName != "MacBookPro11,5";
 
 in
 
@@ -125,7 +127,8 @@ in
   services.xserver = {
     enable = true;
     autorun = true;
-    videoDrivers = [ "nvidia" ];
+    videoDrivers = lib.optional isNvidia "nvidia" ++
+                   lib.optional (!isNvidia) "radeon";
     xkbOptions = "ctrl:nocaps";
 
     autoRepeatDelay = 200;
@@ -520,7 +523,12 @@ in
     rec {
       iproute = super.iproute.override { enableFan = true; };
       linux_4_4 = super.linux_4_4.override {
-        kernelPatches = super.linux_4_4.kernelPatches ++ [ self.kernelPatches.ubuntu_fan_4_4 ];
+        kernelPatches = super.linux_4_4.kernelPatches ++ [
+          # self.kernelPatches.ubuntu_fan_4_4
+        ] ++ lib.optionals (meta.productName == "MacBookPro11,5") [
+          { name = "fix-mac-suspend"; patch = ./mac-suspend.patch; }
+          { name = "fix-mac-backlight"; patch = ./mac-backlight-4.4.patch; }
+        ];
       };
 
       pass = super.pass.override {
