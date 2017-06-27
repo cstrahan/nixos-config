@@ -2,6 +2,9 @@
 # https://wiki.archlinux.org/index.php/Intel_graphics#Module-based_Powersaving_Options
 # https://bbs.archlinux.org/viewtopic.php?id=199388
 
+# TODO:
+#  * pulseaudio-dlna
+
 { config, lib, pkgs, ... }:
 
 # Per-machine settings.
@@ -17,7 +20,7 @@ in
 {
   imports = [
     /etc/nixos/hardware-configuration.nix
-    ./nginx.nix
+    #./nginx.nix
   ];
 
   # Use the gummiboot efi boot loader.
@@ -65,8 +68,13 @@ in
   hardware = {
     facetimehd.enable = true;
     opengl.driSupport32Bit = true;
+    #opengl.extraPackages = with pkgs; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
+    #opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
+    pulseaudio.daemon.config = {
+      flat-volumes = "no";
+    };
     bluetooth.enable = true;
   };
 
@@ -276,7 +284,7 @@ in
     pkgs.wpa_supplicant_gui
     pkgs.dropbox
     pkgs.sublime3
-    pkgs.kde4.kcachegrind
+    #pkgs.kde4.kcachegrind
     pkgs.deluge
 
     # messaging
@@ -328,6 +336,10 @@ in
 
     # CLI tools
     #pkgs.ranger
+    #pkgs.mtr
+    #pkgs.reptyr
+    pkgs.file
+    pkgs.ncurses.dev # infocmp/tic/etc
     pkgs.python2Packages.docker_compose
     pkgs.sshpass
     pkgs.iw
@@ -401,13 +413,15 @@ in
     pkgs.emacs
     pkgs.ctags
     pkgs.global
-    #pkgs.rtags
+    pkgs.rtags
     pkgs.w3m-full
     pkgs.jdk
     pkgs.leiningen
-    #pkgs.tweak
+    pkgs.tweak
     pkgs.asciinema
     pkgs.mongodb-tools
+    #pkgs.clac
+    #pkgs.smem # get matplotlib integration working
 
     pkgs.fuse
     pkgs.sshfsFuse
@@ -415,6 +429,7 @@ in
     pkgs.gtk2 # To get GTK+'s themes.
     pkgs.hicolor_icon_theme
     pkgs.tango-icon-theme
+    pkgs.adwaita-icon-theme
     pkgs.shared_mime_info
     pkgs.vanilla-dmz
 
@@ -521,7 +536,7 @@ in
   };
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
-      iproute = super.iproute.override { enableFan = true; };
+      #iproute = super.iproute.override { enableFan = true; };
       linux_4_4 = super.linux_4_4.override {
         kernelPatches = super.linux_4_4.kernelPatches ++ [
           # self.kernelPatches.ubuntu_fan_4_4
