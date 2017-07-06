@@ -5,6 +5,11 @@
 # TODO:
 #  * pulseaudio-dlna
 
+# https://developer.chrome.com/extensions/external_extensions
+# https://developer.chrome.com/extensions/nativeMessaging
+# https://developer.chrome.com/extensions/messaging
+# https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging
+
 { config, lib, pkgs, ... }:
 
 # Per-machine settings.
@@ -66,10 +71,14 @@ in
   virtualisation.docker.storageDriver = "devicemapper";
 
   hardware = {
+    enableRedistributableFirmware = true;
+    cpu.intel.updateMicrocode = true;
+    cpu.amd.updateMicrocode = false;
     facetimehd.enable = true;
+    opengl.enable = true;
     opengl.driSupport32Bit = true;
-    #opengl.extraPackages = with pkgs; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
-    #opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
+    opengl.extraPackages = with pkgs; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
+    opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
     pulseaudio.daemon.config = {
@@ -80,6 +89,14 @@ in
 
   programs.light.enable = true;
   programs.ssh.startAgent = false; # we'll use GPG from ~/.xsession
+  #programs.browserpass.enable = true;
+  #programs.gnupg = {
+  #  agent.enable = true;
+  #  agent.enableSSHSupport = true;
+  #  agent.enableExtraSocket = true;
+  #  agent.enableBrowserSocket = true;
+  #  dirmngr.enable = true;
+  #};
 
   services.logind.extraConfig =
     # I hate accidentally hitting the power key and watching my laptop die ...
@@ -87,17 +104,23 @@ in
       HandlePowerKey=suspend
     '';
 
-  # Needed for GTK themes.
-  environment.pathsToLink = [ "/share" ];
+  environment.enableDebugInfo = false; # TODO
+
+  environment.extraOutputsToInstall = [ /* "doc" "info" "devdoc" */ ]; # TODO
+
+  environment.pathsToLink = [
+    # Needed for GTK themes.
+    "/share"
+  ];
 
   environment.variables = {
     BROWSER = "google-chrome-stable";
     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   };
 
-  #environment.etc."fuse.conf".text = ''
-  #  user_allow_other
-  #'';
+  environment.etc."fuse.conf".text = ''
+    user_allow_other
+  '';
 
   # Enable the backlight on rMBP
   # Disable USB-based wakeup
@@ -135,6 +158,7 @@ in
   services.xserver = {
     enable = true;
     autorun = true;
+    #videoDrivers = [ "nouveau" ];
     videoDrivers = lib.optional isNvidia "nvidia" ++
                    lib.optional (!isNvidia) "radeon";
     xkbOptions = "ctrl:nocaps";
@@ -273,6 +297,12 @@ in
     # man pages
     pkgs.man-pages
 
+    # Graphics debugging
+    pkgs.glxinfo
+    pkgs.vdpauinfo # provides vdpauinfo
+    pkgs.libva     # provides vainfo
+    pkgs.xorg.xdriinfo
+
     pkgs.google-chrome
     #pkgs.chromium
     pkgs.firefoxWrapper
@@ -280,14 +310,13 @@ in
     pkgs.idea.idea-community
     #pkgs.idea.idea-ultimate
 
-    pkgs.glxinfo
-    pkgs.wpa_supplicant_gui
     pkgs.dropbox
     pkgs.sublime3
     #pkgs.kde4.kcachegrind
     pkgs.deluge
 
     # messaging
+    pkgs.zoom-us
     pkgs.hipchat
     pkgs.irssi
     pkgs.weechat
@@ -333,11 +362,19 @@ in
     pkgs.sxhkd
     pkgs.rofi
     pkgs.arandr
+    pkgs.desktop_file_utils
+    pkgs.shared_mime_info
+    #pkgs.devilspie2
+    # https://github.com/AndyCrowd/list-desktop-files # TODO
 
     # CLI tools
-    #pkgs.ranger
-    #pkgs.mtr
-    #pkgs.reptyr
+    pkgs.ranger
+    #pkg.static-ldd
+    pkgs.git-series
+    pkgs.xsv
+    pkgs.mtr
+    pkgs.reptyr
+    pkgs.vmtouch # control system cache
     pkgs.file
     pkgs.ncurses.dev # infocmp/tic/etc
     pkgs.python2Packages.docker_compose
@@ -376,7 +413,10 @@ in
     pkgs.bind
     pkgs.pciutils
     pkgs.awscli
+    #pkgs.aws-shell
     pkgs.peco
+    pkgs.fzf
+    #pkgs.skim
     pkgs.stunnel
     #pkgs.colordiff # TODO: fix url in nixpkgs
     pkgs.ncdu
@@ -397,6 +437,8 @@ in
     pkgs.tree
     pkgs.silver-searcher
     pkgs.vimHuge
+    pkgs.vis
+    pkgs.emacs
     pkgs.git
     pkgs.cvs
     pkgs.cvs_fast_export
@@ -410,7 +452,6 @@ in
     pkgs.mc
     pkgs.watchman
     pkgs.pythonPackages.pywatchman
-    pkgs.emacs
     pkgs.ctags
     pkgs.global
     pkgs.rtags
@@ -420,7 +461,7 @@ in
     pkgs.tweak
     pkgs.asciinema
     pkgs.mongodb-tools
-    #pkgs.clac
+    pkgs.clac
     #pkgs.smem # get matplotlib integration working
 
     pkgs.fuse
@@ -429,7 +470,7 @@ in
     pkgs.gtk2 # To get GTK+'s themes.
     pkgs.hicolor_icon_theme
     pkgs.tango-icon-theme
-    pkgs.adwaita-icon-theme
+    pkgs.gnome3.defaultIconTheme
     pkgs.shared_mime_info
     pkgs.vanilla-dmz
 
@@ -443,10 +484,11 @@ in
     pkgs.nq
     pkgs.taskwarrior
     pkgs.pagemon
-    #pkgs.exa
+    pkgs.ripgrep
+    pkgs.exa
     pkgs.vnstat
-    # clipgrab diffoscope aws-shell
-    # playerctl
+    pkgs.playerctl
+    # clipgrab diffoscope
   ];
 
   environment.shells = [
@@ -546,33 +588,34 @@ in
         ];
       };
 
+      kdbplus = super.kdbplus.overrideAttrs (_: {
+        src = self.requireFile {
+          message = ''
+            Nix can't download kdb+ for you automatically. Go to
+            http://kx.com and download the free, 32-bit version for
+            Linux. Then run "nix-prefetch-url file:///linux.zip" in the
+            directory where you saved it. Note you need version 3.3.
+          '';
+          name   = "linux.zip";
+          sha256 = "0pvndlqspxrzp5fbx2b6qw8cld8c8hcz5kavmgvs9l4s3qv9ab51";
+        };
+      });
+
       pass = super.pass.override {
         gnupg = self.gnupg21;
       };
 
-      # use the latest xsel because of bugs
-      xsel = self.stdenv.mkDerivation rec {
-        name = "xsel-${version}";
-
-        version = "git-2016-09-02";
-
-        src = self.fetchFromGitHub {
-          owner = "kfish";
-          repo = "xsel";
-          rev = "aa7f57eed805adb09e9c59c8ea841870e8206b81";
-          sha256 = "04mrc8j0rr7iy1k6brfxnx26pmxm800gh4nqrxn6j2lz6vd5y9m5";
-        };
-
-        buildInputs = [ self.xlibsWrapper self.autoreconfHook ];
-
-        postUnpack = ''
-          mv $sourceRoot/README{.md,}
-        '';
-
-        meta = {
-          platforms = self.stdenv.lib.platforms.unix;
-        };
-      };
+      # Until v1.9.0 is released
+      ranger = super.ranger.overrideAttrs (attrs: rec {
+        name = "ranger-unstable-${version}";
+        version = "2017-06-22";
+        src = (self.fetchFromGitHub {
+                 owner = "ranger";
+                 repo = "ranger";
+                 rev = "086074db6f08af058ffdced7319287715a88d42a";
+                 sha256 = "0mfcjaaqwkn8kwnr67v9g2mqrvamxsn73qz4zxjdfdqswkbyjyhk";
+               });
+      });
 
       pragmatapro =
         self.stdenv.mkDerivation rec {
@@ -594,6 +637,7 @@ in
             find -name "PragmataPro*.ttf" -exec mv {} $install_path \;
           '';
         };
+
       vimHuge =
         with self;
         with self.xorg;
