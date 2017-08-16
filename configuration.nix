@@ -60,7 +60,10 @@ in
 
   networking.hostName = meta.hostname;
   networking.hostId = "0ae2b4e1";
+
   networking.networkmanager.enable = lib.mkForce true;
+  networking.networkmanager.insertNameservers = [ "8.8.8.8" "8.8.4.4" ];
+  networking.nameservers = [ "8.8.8.8" "8.8.4.4" ];
   networking.wireless.enable = lib.mkForce false;
   networking.firewall.enable = false;
   networking.firewall.allowedUDPPorts = [
@@ -87,6 +90,7 @@ in
     bluetooth.enable = true;
   };
 
+  #programs.cdemu.enable = true;
   programs.light.enable = true;
   programs.ssh.startAgent = false; # we'll use GPG from ~/.xsession
   #programs.browserpass.enable = true;
@@ -116,6 +120,10 @@ in
   environment.variables = {
     BROWSER = "google-chrome-stable";
     SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+
+    # Prevent Wine from changing filetype associations.
+    # https://wiki.winehq.org/FAQ#How_can_I_prevent_Wine_from_changing_the_filetype_associations_on_my_system_or_adding_unwanted_menu_entries.2Fdesktop_links.3F
+    WINEDLLOVERRIDES = "winemenubuilder.exe=d";
   };
 
   environment.etc."fuse.conf".text = ''
@@ -157,6 +165,7 @@ in
   #services.mbpfan.enable = true; # seems to have stopped working recently...
   services.xserver = {
     enable = true;
+    wacom.enable = true;
     autorun = true;
     #videoDrivers = [ "nouveau" ];
     videoDrivers = lib.optional isNvidia "nvidia" ++
@@ -373,6 +382,10 @@ in
     pkgs.git-series
     pkgs.xsv
     pkgs.mtr
+    pkgs.jnettop
+    pkgs.bmon
+    pkgs.iftop
+    #pkgs.mitmproxy # tornado requirement doesn't match
     pkgs.reptyr
     pkgs.vmtouch # control system cache
     pkgs.file
@@ -420,6 +433,7 @@ in
     pkgs.stunnel
     #pkgs.colordiff # TODO: fix url in nixpkgs
     pkgs.ncdu
+    pkgs.di
     pkgs.graphviz
     pkgs.gtypist
     pkgs.nix-repl
@@ -489,6 +503,16 @@ in
     pkgs.vnstat
     pkgs.playerctl
     # clipgrab diffoscope
+    # pkgs.ezstream
+    # pkgs.hotspot
+    # pkgs.abduco
+    # pkgs.dvtm
+    # pkgs.nix-index
+    # pkgs.lcdproc
+    # pkgs.aws-auth
+    # pkgs.gpick # TODO: package (https://github.com/thezbyg/gpick)
+    # pkgs.qdirstat
+    # pkgs.wiggle
   ];
 
   environment.shells = [
@@ -517,12 +541,14 @@ in
     gc-keep-outputs = true
   '';
   nix.binaryCaches = [
-    "http://cache.nixos.org"
     "http://hydra.nixos.org"
+    "https://cache.nixos.org" # <--- I think this is gone (???)
   ];
   nix.trustedBinaryCaches = [
+    "http://hydra.nixos.org"
+    "https://cache.nixos.org"
     "http://hydra.cryp.to"
-    "https://ryantrinkle.com:5443"
+    #"https://ryantrinkle.com:5443"
   ];
   # https://github.com/NixOS/nixpkgs/issues/9129
   nix.requireSignedBinaryCaches = true;
@@ -536,7 +562,7 @@ in
     enableGhostscriptFonts = true;
     fonts = with pkgs; [
       pragmatapro
-      proggyfonts
+      #proggyfonts # hash changed
 
       emojione
       noto-fonts
@@ -578,6 +604,13 @@ in
   };
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
+      # https://github.com/NixOS/nixpkgs/issues/28106
+      optipng = super.optipng.overrideAttrs (drv: {
+        preConfigure = ''
+          export LD=$CC
+        '';
+      });
+
       #iproute = super.iproute.override { enableFan = true; };
       linux_4_4 = super.linux_4_4.override {
         kernelPatches = super.linux_4_4.kernelPatches ++ [
