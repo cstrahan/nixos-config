@@ -102,6 +102,10 @@ in
   #  dirmngr.enable = true;
   #};
 
+  services.udev.packages = [
+    pkgs.openocd # embedded dev devices
+  ];
+
   services.logind.extraConfig =
     # I hate accidentally hitting the power key and watching my laptop die ...
     lib.optionalString isMBP ''
