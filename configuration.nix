@@ -19,14 +19,18 @@ let
        || meta.hostname == "cstrahan-work-mbp-nixos";
   isWork = meta.hostname == "cstrahan-work-mbp-nixos";
   isNvidia = meta.productName != "MacBookPro11,5";
+  gitit = import ./private/gitit.nix;
 
 in
 
 {
   imports = [
     /etc/nixos/hardware-configuration.nix
+    ./modules
     #./nginx.nix
   ];
+
+  system.stateVersion = "17.09";
 
   # Use the gummiboot efi boot loader.
   #boot.kernelPatches = [ pkgs.kernelPatches.ubuntu_fan_4_4 ];
@@ -82,6 +86,7 @@ in
     opengl.driSupport32Bit = true;
     opengl.extraPackages = with pkgs; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
     opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];
+    pulseaudio.package = pkgs.pulseaudioFull; # 'full' instead of 'light' for e.g. bluetooth
     pulseaudio.enable = true;
     pulseaudio.support32Bit = true;
     pulseaudio.daemon.config = {
@@ -158,8 +163,8 @@ in
 
   services.printing = {
     enable = true;
-    gutenprint = true;
     drivers = [
+      pkgs.gutenprint
       pkgs.cups-bjnp
       pkgs.hplip
       pkgs.cnijfilter2
@@ -383,7 +388,7 @@ in
     # CLI tools
     pkgs.ranger
     #pkg.static-ldd
-    pkgs.git-series
+    #pkgs.git-series
     pkgs.xsv
     pkgs.mtr
     pkgs.jnettop
@@ -407,7 +412,7 @@ in
     pkgs.neomutt
     pkgs.msmtp
     pkgs.isync
-    pkgs.gnupg21
+    pkgs.gnupg
     pkgs.pinentry
     pkgs.lsof
     pkgs.usbutils
@@ -496,7 +501,27 @@ in
     pkgs.blueman
     pkgs.pavucontrol
 
-    #pkgs.gitinspector
+    # pkgs.rtv
+    # pkgs.fd
+    # pkgs.nullmailer
+    # pkgs.gradio
+    # pkgs.hstr
+    # pkgs.pgpdump
+    # pkgs.kt
+    # pkgs.proot
+    # pkgs.snd
+    # pkgs.biboumi
+    # pkgs.tzupdate
+    # https://github.com/dino/dino
+    # pkgs.notify-desktop
+    # pkgs.xpointerbarrier
+    # pkgs.bcc
+    # pkgs.firehol
+    # pkgs.et
+    # pkgs.bro
+    # pkgs.fzy
+    # pkgs.iprange
+    # pkgs.gitinspector
     pkgs.lr
     pkgs.xe
     pkgs.nq
@@ -540,9 +565,20 @@ in
     ];
   };
 
+  nix.package = pkgs.nixUnstable.overrideAttrs (attrs:
+    {
+      src = pkgs.fetchFromGitHub {
+        owner = "NixOS";
+        repo = "nix";
+        rev = "7a4d9574d9275426e31bb2b3fbb8515600d233c4";
+        sha256 = "10gvxapaxkrm8jdv8s3lizv8sjswl57pnbb67bhgiin51skzv89k";
+      };
+    }
+  );
   nix.useSandbox = true;
+  # gc-keep-outputs in Nix 1.11, keep-outputs in Nix 1.12
   nix.extraOptions = ''
-    gc-keep-outputs = true
+    keep-outputs = true
   '';
   nix.binaryCaches = [
     "http://hydra.nixos.org"
@@ -609,11 +645,11 @@ in
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
       # https://github.com/NixOS/nixpkgs/issues/28106
-      optipng = super.optipng.overrideAttrs (drv: {
-        preConfigure = ''
-          export LD=$CC
-        '';
-      });
+      #optipng = super.optipng.overrideAttrs (drv: {
+      #  preConfigure = ''
+      #    export LD=$CC
+      #  '';
+      #});
 
       #iproute = super.iproute.override { enableFan = true; };
       linux_4_4 = super.linux_4_4.override {
@@ -637,10 +673,6 @@ in
           sha256 = "0pvndlqspxrzp5fbx2b6qw8cld8c8hcz5kavmgvs9l4s3qv9ab51";
         };
       });
-
-      pass = super.pass.override {
-        gnupg = self.gnupg21;
-      };
 
       # Until v1.9.0 is released
       ranger = super.ranger.overrideAttrs (attrs: rec {
