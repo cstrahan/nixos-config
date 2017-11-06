@@ -1,40 +1,39 @@
 #!/usr/bin/env bash
 
+# get versions from master
+master=https://github.com/NixOS/nixpkgs/archive/master.tar.gz
+export NIX_PATH=nixpkgs=$master
+
+getUrl() {
+  nix eval --json "((import <nixpkgs> {}).$1.urls)" | jq -r '.[0][0]'
+}
+
+download() {
+  nix-build '<nixpkgs>' -A "$1"
+}
+
+cache() {
+  nix copy "$1" --to s3://cstrahan-nix-cache
+}
+
+#-------------------------------------------------------------------------------
+
 echo "Fetching chrome . . ."
 
 # Make sure the download dir exists
 downloadDir=$HOME/Downloads/chrome
 mkdir -p $downloadDir
 
-# get the version of chromium from master
-version=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs/pkgs/applications/networking/browsers/chromium/upstream-info.nix>' -A stable.version)
-version=${version:1:${#version}-2}
-
-sha256=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs/pkgs/applications/networking/browsers/chromium/upstream-info.nix>' -A stable.sha256)
-sha256=${sha256:1:${#sha256}-2}
-
-sha256bin=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs/pkgs/applications/networking/browsers/chromium/upstream-info.nix>' -A stable.sha256bin64)
-sha256bin=${sha256bin:1:${#sha256bin}-2}
-
-bucketURL="https://commondatastorage.googleapis.com/chromium-browser-official"
-srcUrl="${bucketURL}/chromium-${version}.tar.xz"
-
-if [ ! -e "$HOME/Downloads/$(basename $srcUrl)" ]; then
-  path=$(nix-prefetch-url "$srcUrl" "$sha256" --print-path | tail -n 1)
-  cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $srcUrl)"
-fi
-
-arch=amd64
-packageSuffix=stable
-packageName="google-chrome-${packageSuffix}"
-mirror="https://dl.google.com/linux/chrome/deb/pool/main/g"
-binUrl="${mirror}/${packageName}/${packageName}_${version}-1_${arch}.deb"
-
-if [ ! -e "$HOME/Downloads/$(basename $binUrl)" ]; then
-  path=$(nix-prefetch-url "$binUrl" "$sha256bin" --print-path | tail -n 1)
-  cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $binUrl)"
-fi
-
+for attr in main binary; do
+  url=$(getUrl chromium.upstream-info.$attr)
+  file=$(basename "$url")
+  if [ ! -e "$downloadDir/$file" ]; then
+    echo $"Downloading $file . . ."
+    path=$(download chromium.upstream-info.$attr)
+    cp --no-preserve=mode,ownership "$path" "$downloadDir/$file"
+    cache "$path"
+  fi
+done
 
 #-------------------------------------------------------------------------------
 
@@ -44,7 +43,11 @@ echo "Fetching spotify . . ."
 downloadDir=$HOME/Downloads/spotify
 mkdir -p $downloadDir
 
-url=$(NIX_PATH=nixpkgs=https://github.com/NixOS/nixpkgs/archive/master.tar.gz nix-instantiate --eval '<nixpkgs>' -A pkgs.spotify.src.urls)
-url=${url:3:${#url}-6}
-path=$(nix-prefetch-url "$url" --print-path | tail -n 1)
-cp --no-preserve=mode,ownership "$path" "$downloadDir/$(basename $path | perl -pe 's|(.*?-)(.*)|\2|')"
+url=$(getUrl spotify.src)
+file=$(basename "$url")
+if [ ! -e "$downloadDir/$file" ]; then
+  echo $"Downloading $file . . ."
+  path=$(download spotify.src)
+  cp --no-preserve=mode,ownership "$path" "$downloadDir/$file"
+  cache "$path"
+fi
