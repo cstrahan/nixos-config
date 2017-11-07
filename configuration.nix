@@ -99,13 +99,14 @@ in
   programs.light.enable = true;
   programs.ssh.startAgent = false; # we'll use GPG from ~/.xsession
   #programs.browserpass.enable = true;
-  #programs.gnupg = {
-  #  agent.enable = true;
-  #  agent.enableSSHSupport = true;
-  #  agent.enableExtraSocket = true;
-  #  agent.enableBrowserSocket = true;
-  #  dirmngr.enable = true;
-  #};
+  programs.gnupg = {
+    # TODO: https://bbs.archlinux.org/viewtopic.php?id=214268
+    agent.enable = true;
+    agent.enableSSHSupport = true;
+    agent.enableExtraSocket = false;
+    agent.enableBrowserSocket = false;
+    dirmngr.enable = true;
+  };
 
   services.udev.packages = [
     pkgs.openocd # embedded dev devices
