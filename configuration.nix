@@ -348,14 +348,12 @@ in
     keep-outputs = true
   '';
   nix.binaryCaches = [
-    "http://hydra.nixos.org"
-    "https://cache.nixos.org" # <--- I think this is gone (???)
+    "https://cache.nixos.org"
+    #"https://hydra.nixos.org" # <--- I think this is gone (???)
   ];
   nix.trustedBinaryCaches = [
-    "http://hydra.nixos.org"
     "https://cache.nixos.org"
-    "http://hydra.cryp.to"
-    #"https://ryantrinkle.com:5443"
+    #"https://hydra.nixos.org"
   ];
   # https://github.com/NixOS/nixpkgs/issues/9129
   nix.requireSignedBinaryCaches = true;
