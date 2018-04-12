@@ -428,8 +428,10 @@ in
    enablePepperFlash = true;
    enableWideVine = true;
   };
-  nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
-    rec {
+  nixpkgs.overlays = [
+    (import ./overlays/packages.nix)
+
+    (self: super: {
       linux_4_4 = super.linux_4_4.override {
         kernelPatches = super.linux_4_4.kernelPatches ++ [
           # self.kernelPatches.ubuntu_fan_4_4
@@ -438,125 +440,6 @@ in
           { name = "fix-mac-backlight"; patch = ./mac-backlight-4.4.patch; }
         ];
       };
-
-      kdbplus = super.kdbplus.overrideAttrs (_: {
-        src = self.requireFile {
-          message = ''
-            Nix can't download kdb+ for you automatically. Go to
-            http://kx.com and download the free, 32-bit version for
-            Linux. Then run "nix-prefetch-url file:///linux.zip" in the
-            directory where you saved it. Note you need version 3.3.
-          '';
-          name   = "linux.zip";
-          sha256 = "0pvndlqspxrzp5fbx2b6qw8cld8c8hcz5kavmgvs9l4s3qv9ab51";
-        };
-      });
-
-      # Until v1.9.0 is released
-      ranger = super.ranger.overrideAttrs (attrs: rec {
-        name = "ranger-unstable-${version}";
-        version = "2017-06-22";
-        src = (self.fetchFromGitHub {
-                 owner = "ranger";
-                 repo = "ranger";
-                 rev = "086074db6f08af058ffdced7319287715a88d42a";
-                 sha256 = "0mfcjaaqwkn8kwnr67v9g2mqrvamxsn73qz4zxjdfdqswkbyjyhk";
-               });
-      });
-
-      pragmatapro =
-        self.stdenv.mkDerivation rec {
-          version = "0.820";
-          name = "pragmatapro-${version}";
-          src = self.requireFile rec {
-            name = "PragmataPro${version}.zip";
-            url = "file://path/to/${name}";
-            sha256 = "0dg7h80jaf58nzjbg2kipb3j3w6fz8z5cyi4fd6sx9qlkvq8nckr";
-          };
-          buildInputs = [ self.unzip ];
-          phases = [ "installPhase" ];
-          installPhase = ''
-            unzip $src
-
-            install_path=$out/share/fonts/truetype/public/pragmatapro-$version
-            mkdir -p $install_path
-
-            find -name "PragmataPro*.ttf" -exec mv {} $install_path \;
-          '';
-        };
-
-      vimHuge =
-        with self;
-        with self.xorg;
-        stdenv.mkDerivation rec {
-          name = "vim-${version}";
-
-          version = "8.0.0005";
-
-          dontStrip = 1;
-
-          hardeningDisable = [ "fortify" ];
-
-          src = fetchFromGitHub {
-            owner = "vim";
-            repo = "vim";
-            rev = "v${version}";
-            sha256 = "0ys3l3dr43vjad1f096ch1sl3x2ajsqkd03rdn6n812m7j4wipx0";
-          };
-
-          buildInputs = [
-            pkgconfig gettext glib
-            libX11 libXext libSM libXpm libXt libXaw libXau libXmu libICE
-            gtk2 ncurses
-            cscope
-            python2Full ruby luajit perl tcl
-          ];
-
-          configureFlags = [
-              "--enable-cscope"
-              "--enable-fail-if-missing"
-              "--with-features=huge"
-              "--enable-gui=none"
-              "--enable-multibyte"
-              "--enable-nls"
-              "--enable-luainterp=yes"
-              "--enable-pythoninterp=yes"
-              "--enable-perlinterp=yes"
-              "--enable-rubyinterp=yes"
-              "--enable-tclinterp=yes"
-              "--with-luajit"
-              "--with-lua-prefix=${luajit}"
-              "--with-python-config-dir=${python2Full}/lib"
-              "--with-ruby-command=${ruby}/bin/ruby"
-              "--with-tclsh=${tcl}/bin/tclsh"
-              "--with-tlib=ncurses"
-              "--with-compiledby=Nix"
-          ];
-
-          meta = with stdenv.lib; {
-            description = "The most popular clone of the VI editor";
-            homepage    = http://www.vim.org;
-            maintainers = with maintainers; [ cstrahan ];
-            platforms   = platforms.unix;
-          };
-        };
-    };
-
-    # https://wiki.archlinux.org/index.php/Systemd/User#D-Bus
-    #systemd.services."user@".environment.DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/user/%I/bus";
-    #systemd.user.sockets."dbus" = {
-    #  description = "D-Bus User Message Bus Socket";
-    #  wantedBy = [ "sockets.target" ];
-    #  socketConfig = {
-    #    ListenStream = "%t/bus";
-    #  };
-    #};
-    #systemd.user.services."dbus" = {
-    #  description = "D-Bus User Message Bus";
-    #  requires = [ "dbus.socket" ];
-    #  serviceConfig = {
-    #    ExecStart = "${pkgs.dbus_daemon}/bin/dbus-daemon --session --address=systemd: --nofork --nopidfile --systemd-activation";
-    #    ExecReload = "${pkgs.dbus_daemon}/bin/dbus-send --print-reply --session --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig";
-    #  };
-    #};
+    })
+  ];
 }
