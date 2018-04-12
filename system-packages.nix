@@ -42,8 +42,7 @@ pkgs: with pkgs; [
   exiv2
   #imagemagick
 
-  # work around https://bugs.winehq.org/show_bug.cgi?id=36139
-  wineUnstable
+  wineStable
   winetricks
 
   # X11 stuff
@@ -180,9 +179,9 @@ pkgs: with pkgs; [
   sshfsFuse
 
   gtk2 # To get GTK+'s themes.
+  gnome3.defaultIconTheme
   hicolor_icon_theme
   tango-icon-theme
-  gnome3.defaultIconTheme
   shared_mime_info
   vanilla-dmz
 
@@ -232,4 +231,6 @@ pkgs: with pkgs; [
   # gpick # TODO: package (https://github.com/thezbyg/gpick)
   # qdirstat
   # wiggle
+  # darkhttp
+  # unrar
 ]

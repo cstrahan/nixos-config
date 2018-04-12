@@ -1,3 +1,6 @@
+# https://blog.pclewis.com/2016/03/19/xmonad-spacemacs-style.html
+# https://github.com/pclewis/dotfiles/tree/master/xmonad/.xmonad
+# https://hoodoo.github.io/
 # http://loicpefferkorn.net/2015/01/arch-linux-on-macbook-pro-retina-2014-with-dm-crypt-lvm-and-suspend-to-disk/
 # https://wiki.archlinux.org/index.php/Intel_graphics#Module-based_Powersaving_Options
 # https://bbs.archlinux.org/viewtopic.php?id=199388
@@ -27,14 +30,23 @@ in
   imports = [
     /etc/nixos/hardware-configuration.nix
     ./modules
-    #./nginx.nix
   ];
 
   system.stateVersion = "17.09";
 
+  services.kubernetes.roles = [ "master" "node" ];
+  services.kubernetes.kubelet.hostname = "localhost";
+
+  #services.gitit.enable = true;
+  #services.gitit.port = 80;
+  #services.gitit.oauthClientId = gitit.oauthClientId;
+  #services.gitit.oauthClientSecret = gitit.oauthClientSecret;
+  #services.gitit.oauthCallback = "http://wiki.cstrahan.com/_githubCallback";
+  #services.gitit.oauthAuthorizeEndpoint = "https://github.com/login/oauth/authorize";
+  #services.gitit.oauthAccessTokenEndpoint = "https://github.com/login/oauth/access_token";
+  #services.gitit.authenticationMethod = "github";
+
   # Use the gummiboot efi boot loader.
-  #boot.kernelPatches = [ pkgs.kernelPatches.ubuntu_fan_4_4 ];
-  #boot.kernelPackages = pkgs.linuxPackages_4_4;
   boot.kernelModules = [ "msr" "coretemp" ] ++ lib.optional isMBP "applesmc";
   boot.blacklistedKernelModules =
     # make my desktop use the `wl` module for WiFi.
@@ -73,6 +85,10 @@ in
   networking.firewall.allowedUDPPorts = [
     631 # IPP - printer discovery
   ];
+
+  virtualisation.virtualbox.host.enable = true;
+  # vbox 3D acceleration issue:  https://github.com/NixOS/nixpkgs/issues/22760
+  virtualisation.virtualbox.host.enableHardening = false;
 
   virtualisation.docker.enable = true;
   virtualisation.docker.storageDriver = "devicemapper";
@@ -192,6 +208,7 @@ in
       Option   "RegistryDwords" "EnableBrightnessControl=1"
     '';
 
+    # https://wiki.archlinux.org/index.php/Mouse_acceleration
     # Settings can be tested out like so:
     #
     # $ synclient AccelFactor=0.0055 MinSpeed=0.95 MaxSpeed=1.15
@@ -324,7 +341,7 @@ in
         uid             = 2000;
         name            = "cstrahan";
         group           = "users";
-        extraGroups     = [ "wheel" "networkmanager" "docker" "fuse" ];
+        extraGroups     = [ "wheel" "networkmanager" "docker" "fuse" "vboxusers" ];
         isNormalUser    = true;
         passwordFile    = "/etc/nixos/passwords/cstrahan";
         useDefaultShell = false;
@@ -333,16 +350,7 @@ in
     ];
   };
 
-  nix.package = pkgs.nixUnstable.overrideAttrs (attrs:
-    {
-      src = pkgs.fetchFromGitHub {
-        owner = "NixOS";
-        repo = "nix";
-        rev = "7a4d9574d9275426e31bb2b3fbb8515600d233c4";
-        sha256 = "10gvxapaxkrm8jdv8s3lizv8sjswl57pnbb67bhgiin51skzv89k";
-      };
-    }
-  );
+  nix.package = pkgs.nixUnstable;
   nix.useSandbox = true;
   # gc-keep-outputs in Nix 1.11, keep-outputs in Nix 1.12
   nix.extraOptions = ''
@@ -360,6 +368,17 @@ in
   nix.requireSignedBinaryCaches = true;
   nix.binaryCachePublicKeys = [
     "hydra.nixos.org-1:CNHJZBh9K4tP3EKF6FkkgeVYsS3ohTl+oS0Qa8bezVs="
+  ];
+  nix.distributedBuilds = true;
+  nix.buildMachines = [
+    {
+      hostName = "aarch64.nixos.community";
+      maxJobs = 96;
+      sshKey = "/root/.ssh/cstrahan_rsa";
+      sshUser = "cstrahan";
+      system = "aarch64-linux";
+      supportedFeatures = [ "big-parallel" ];
+    }
   ];
 
   fonts = {
@@ -379,6 +398,7 @@ in
       fira-mono
       font-droid
 
+      iosevka
       hack-font
       terminus_font
       anonymousPro
@@ -410,14 +430,6 @@ in
   };
   nixpkgs.config.packageOverrides = super: let self = super.pkgs; in
     rec {
-      # https://github.com/NixOS/nixpkgs/issues/28106
-      #optipng = super.optipng.overrideAttrs (drv: {
-      #  preConfigure = ''
-      #    export LD=$CC
-      #  '';
-      #});
-
-      #iproute = super.iproute.override { enableFan = true; };
       linux_4_4 = super.linux_4_4.override {
         kernelPatches = super.linux_4_4.kernelPatches ++ [
           # self.kernelPatches.ubuntu_fan_4_4
