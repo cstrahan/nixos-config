@@ -32,10 +32,10 @@ in
     ./modules
   ];
 
-  system.stateVersion = "17.09";
+  system.stateVersion = "18.09";
 
-  services.kubernetes.roles = [ "master" "node" ];
-  services.kubernetes.kubelet.hostname = "localhost";
+  #services.kubernetes.roles = [ "master" "node" ];
+  #services.kubernetes.kubelet.hostname = "localhost";
 
   #services.gitit.enable = true;
   #services.gitit.port = 80;
@@ -46,20 +46,45 @@ in
   #services.gitit.oauthAccessTokenEndpoint = "https://github.com/login/oauth/access_token";
   #services.gitit.authenticationMethod = "github";
 
-  # Use the gummiboot efi boot loader.
-  boot.kernelModules = [ "msr" "coretemp" ] ++ lib.optional isMBP "applesmc";
-  boot.blacklistedKernelModules =
-    # make my desktop use the `wl` module for WiFi.
-    lib.optionals (!isMBP) [ "b43" "bcma" "bcma-pci-bridge" ];
-  boot.loader.systemd-boot.enable = true;
+  #boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.efi.efiSysMountPoint = "/boot/efi";
   boot.loader.timeout = 8;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.enable = false;
+  boot.loader.grub = {
+    enable = true;
+    efiSupport = true;
+    efiInstallAsRemovable = true; # don't depend on NVRAM
+    device = "nodev"; # EFI only
+    extraEntries = ''
+      menuentry "Ubuntu" {
+        insmod fat
+        insmod part_gpt
+        insmod chain
+        search --no-floppy --fs-uuid 67E3-17ED --set root
+        chainloader /EFI/ubuntu/shimx64.efi
+      }
+
+      menuentry "rEFInd" {
+        insmod fat
+        insmod part_gpt
+        insmod chain
+        search --no-floppy --fs-uuid 67E3-17ED --set root
+        chainloader /EFI/BOOT/refind_x64.efi
+      }
+    '';
+  };
+
+  boot.supportedFilesystems = [ "exfat" "btrfs" ];
   boot.kernel.sysctl = {
     # Note that inotify watches consume 1kB on 64-bit machines.
     "fs.inotify.max_user_watches"   = 1048576;   # default:  8192
     "fs.inotify.max_user_instances" =    1024;   # default:   128
     "fs.inotify.max_queued_events"  =   32768;   # default: 16384
   };
+  boot.kernelModules = [ "msr" "coretemp" ] ++ lib.optional isMBP "applesmc";
+  boot.blacklistedKernelModules =
+    # make my desktop use the `wl` module for WiFi.
+    lib.optionals (!isMBP) [ "b43" "bcma" "bcma-pci-bridge" ];
 
   # Select internationalisation properties.
   time.timeZone = "US/Eastern";
@@ -227,9 +252,9 @@ in
       Option "FingerHigh" "85"
     '';
 
-    #desktopManager.kde4.enable = true;
-    #displayManager.kdm.enable = true;
-    #desktopManager.default = "kde4";
+    #desktopManager.plasma5.enable = true;
+    #desktopManager.default = "plasma5";
+    #displayManager.sddm.enable = true;
 
     desktopManager.default = "none";
     desktopManager.xterm.enable = false;
@@ -432,6 +457,39 @@ in
     (import ./overlays/packages.nix)
 
     (self: super: {
+      # https://github.com/taffybar/taffybar/issues/367
+      # https://github.com/NixOS/nixpkgs/issues/39493
+      # https://github.com/NixOS/nixpkgs/pull/32787
+      taffybar =
+        let
+          inherit (self.haskell.lib) addBuildDepend;
+          hpkgs = pkgs.haskell.packages.ghc822.extend (self: super: {
+            # https://github.com/NixOS/nixpkgs/pull/46766
+            ListLike = addBuildDepend super.ListLike self.semigroups;
+
+            # https://github.com/NixOS/nixpkgs/pull/46767
+            gi-glib = super.gi-glib.override { haskell-gi-overloading = self.haskell-gi-overloading_0_0; };
+            gi-cairo = super.gi-cairo.override { haskell-gi-overloading = self.haskell-gi-overloading_0_0; };
+            gi-xlib = super.gi-xlib.override { haskell-gi-overloading = self.haskell-gi-overloading_0_0; };
+          });
+
+          taffybar-unwrapped = super.taffybar.override {
+            inherit (hpkgs) ghcWithPackages;
+          };
+        in
+          taffybar-unwrapped.overrideAttrs (drv: {
+            nativeBuildInputs = drv.nativeBuildInputs or [] ++ [ self.makeWrapper ];
+            buildCommand = drv.buildCommand + ''
+              sed -i "2iexport GDK_PIXBUF_MODULE_FILE=${pkgs.librsvg.out}/lib/gdk-pixbuf-2.0/2.10.0/loaders.cache" $out/bin/taffybar
+            '';
+          });
+
+      # we want just the xembed-sni-proxy from plasma-workspace
+      xembed-sni-proxy = self.runCommandNoCC "xembed-sni-proxy" {} ''
+        mkdir -p $out/bin
+        ln -s ${pkgs.plasma-workspace}/bin/xembedsniproxy $out/bin
+      '';
+
       linux_4_4 = super.linux_4_4.override {
         kernelPatches = super.linux_4_4.kernelPatches ++ [
           # self.kernelPatches.ubuntu_fan_4_4
