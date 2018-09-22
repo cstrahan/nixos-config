@@ -50,6 +50,8 @@ pkgs: with pkgs; [
   rxvt_unicode_with-plugins
   anki
   taffybar
+  xembed-sni-proxy
+  haskellPackages.status-notifier-item
   dmenu2
   xautolock
   xss-lock
@@ -62,7 +64,8 @@ pkgs: with pkgs; [
   haskellPackages.xmobar
   texstudio
   wmctrl
-  compton
+  compton-git # the (rather old) latest release has sever graphical glitches
+              # when using the glx backend on a MacBookPro
   xorg.xev
   xorg.xprop
   sxhkd
@@ -133,7 +136,6 @@ pkgs: with pkgs; [
   di
   graphviz
   gtypist
-  nix-repl
   zip
   vifm
   wget
