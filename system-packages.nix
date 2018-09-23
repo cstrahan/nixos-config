@@ -46,6 +46,7 @@ pkgs: with pkgs; [
   winetricks
 
   # X11 stuff
+  evtest
   termite
   rxvt_unicode_with-plugins
   anki
@@ -176,6 +177,9 @@ pkgs: with pkgs; [
   mongodb-tools
   clac
   #smem # get matplotlib integration working
+  grub2 # for grub-probe
+  efivar
+  efibootmgr
 
   fuse
   sshfsFuse
