@@ -84,7 +84,9 @@ in
   boot.kernelModules = [ "msr" "coretemp" ] ++ lib.optional isMBP "applesmc";
   boot.blacklistedKernelModules =
     # make my desktop use the `wl` module for WiFi.
-    lib.optionals (!isMBP) [ "b43" "bcma" "bcma-pci-bridge" ];
+    lib.optionals (!isMBP) [ "b43" "bcma" "bcma-pci-bridge" ] ++
+    # make my personal laptop just use `wl`
+    lib.optionals (isMBP && !isWork) [ "b43" "ssb" ];
 
   # Select internationalisation properties.
   time.timeZone = "US/Eastern";
@@ -233,24 +235,10 @@ in
       Option   "RegistryDwords" "EnableBrightnessControl=1"
     '';
 
-    # https://wiki.archlinux.org/index.php/Mouse_acceleration
-    # Settings can be tested out like so:
-    #
-    # $ synclient AccelFactor=0.0055 MinSpeed=0.95 MaxSpeed=1.15
-    synaptics.enable = true;
-    synaptics.twoFingerScroll = true;
-    synaptics.buttonsMap = [ 1 3 2 ];
-    synaptics.tapButtons = false;
-    synaptics.accelFactor = "0.0055";
-    synaptics.minSpeed = "0.95";
-    synaptics.maxSpeed = "1.15";
-    synaptics.palmDetect = true;
-    synaptics.palmMinWidth = 10;
-    # seems to default to 70 and 75
-    synaptics.additionalOptions = ''
-      Option "FingerLow" "80"
-      Option "FingerHigh" "85"
-    '';
+    synaptics.enable = lib.mkForce false;
+    libinput.enable = true;
+    libinput.tapping = false;
+    libinput.tappingDragLock = false;
 
     #desktopManager.plasma5.enable = true;
     #desktopManager.default = "plasma5";
