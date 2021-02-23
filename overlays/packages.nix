@@ -15,4 +15,6 @@ self: super:
       sha256 = "0pvndlqspxrzp5fbx2b6qw8cld8c8hcz5kavmgvs9l4s3qv9ab51";
     };
   });
+
+  myVimPlugins = self.callPackage ../packages/vim-plugins/default.nix { };
 }
