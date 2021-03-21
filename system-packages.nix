@@ -11,7 +11,7 @@ pkgs: with pkgs; [
   libva     # provides vainfo
   xorg.xdriinfo
 
-#  google-chrome
+  google-chrome
 #  chromium
   firefoxWrapper
   #torbrowser

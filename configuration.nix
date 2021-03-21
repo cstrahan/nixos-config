@@ -68,7 +68,7 @@ in
         insmod fat
         insmod part_gpt
         insmod chain
-        search --no-floppy --fs-uuid 8FC3-FC3A --set root
+        search --no-floppy --fs-uuid B458-8BFF --set root
         chainloader /EFI/Microsoft/Boot/bootmgfw.efi
       }
 
@@ -250,10 +250,12 @@ in
     libinput.tapping = false;
     libinput.tappingDragLock = false;
 
-    desktopManager.plasma5.enable = true;
-    #desktopManager.default = "plasma5"; # old
-    displayManager.defaultSession = "plasma5";
-    displayManager.sddm.enable = true;
+    #desktopManager.plasma5.enable = true;
+    #displayManager.defaultSession = "plasma5";
+    #displayManager.sddm.enable = true;
+
+    desktopManager.gnome3.enable = true;
+    displayManager.gdm.enable = true;
 
     #desktopManager.default = "none";
     #desktopManager.xterm.enable = false;
