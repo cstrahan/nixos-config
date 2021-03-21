@@ -2,6 +2,7 @@
 
 pkgs: with pkgs; [
   # man pages
+  gparted
   man-pages
 
   # Graphics debugging
@@ -10,34 +11,34 @@ pkgs: with pkgs; [
   libva     # provides vainfo
   xorg.xdriinfo
 
-  google-chrome
-  #chromium
+#  google-chrome
+#  chromium
   firefoxWrapper
-  torbrowser
-  idea.idea-community
+  #torbrowser
+#  idea.idea-community
   #idea.idea-ultimate
 
   dropbox
-  sublime3
+#  sublime3
   #kde4.kcachegrind
   deluge
 
   # messaging
-  zoom-us
+#  zoom-us
   hipchat
   irssi
   weechat
 
   # media
-  spotify
-  mpv
-  libreoffice
-  abiword
-  gimp
-  inkscape
-  evince
-  zathura
-  cmus
+#  spotify
+#  mpv
+#  libreoffice
+#  abiword
+#  gimp
+#  inkscape
+#  evince
+#  zathura
+#  cmus
   sxiv
   exiv2
   #imagemagick
@@ -48,12 +49,13 @@ pkgs: with pkgs; [
   # X11 stuff
   evtest
   termite
-  rxvt_unicode_with-plugins
-  anki
-  taffybar
+  rxvt_unicode-with-plugins
+#  anki
+#  taffybar # haskell
   xembed-sni-proxy
-  haskellPackages.status-notifier-item
-  dmenu2
+#  haskellPackages.status-notifier-item # haskell
+  #dmenu2
+  dmenu
   xautolock
   xss-lock
   xsel
@@ -62,8 +64,8 @@ pkgs: with pkgs; [
   dunst
   stalonetray
   scrot
-  haskellPackages.xmobar
-  texstudio
+#  haskellPackages.xmobar # haskell
+#  texstudio
   wmctrl
   compton-git # the (rather old) latest release has sever graphical glitches
               # when using the glx backend on a MacBookPro
@@ -91,7 +93,7 @@ pkgs: with pkgs; [
   vmtouch # control system cache
   file
   ncurses.dev # infocmp/tic/etc
-  python2Packages.docker_compose
+  #python2Packages.docker_compose
   sshpass
   iw
   mosh
@@ -113,7 +115,7 @@ pkgs: with pkgs; [
   glib # e.g. `gdbus`
   python2Full
   rpm
-  skype
+  #skype
   powertop
   socat
   nmap # `ncat`
@@ -126,12 +128,12 @@ pkgs: with pkgs; [
   dhcp
   bind
   pciutils
-  awscli
+#  awscli
   #aws-shell
-  peco
+#  peco
   fzf
   #skim
-  stunnel
+#  stunnel
   #colordiff # TODO: fix url in nixpkgs
   ncdu
   di
@@ -151,29 +153,31 @@ pkgs: with pkgs; [
   tree
   silver-searcher
   vimHuge
-  vis
-  emacs
+  neovim
+  kate
+#  vis
+#  emacs
   git
-  cvs
-  cvs_fast_export
-  bazaar
-  mercurialFull
-  darcs
+#  cvs
+#  cvs_fast_export
+#  bazaar
+#  mercurialFull
+#  darcs
   subversion
   zsh
   tmux
-  nix-prefetch-scripts
+#  nix-prefetch-scripts
   mc
   watchman
-  pythonPackages.pywatchman
-  ctags
-  global
-  rtags
-  w3m-full
-  jdk
-  leiningen
+#  pythonPackages.pywatchman
+#  ctags
+#  global
+#  rtags
+#  w3m-full
+#  jdk
+#  leiningen
   tweak
-  asciinema
+#  asciinema
   mongodb-tools
   clac
   #smem # get matplotlib integration working
@@ -217,15 +221,15 @@ pkgs: with pkgs; [
   # fzy
   # iprange
   # gitinspector
-  lr
-  xe
-  nq
-  taskwarrior
-  pagemon
-  ripgrep
-  exa
-  vnstat
-  playerctl
+#  lr
+#  xe
+#  nq
+#  taskwarrior
+#  pagemon
+#  ripgrep
+#  exa
+#  vnstat
+#  playerctl
   # clipgrab diffoscope
   # ezstream
   # hotspot
@@ -239,4 +243,6 @@ pkgs: with pkgs; [
   # wiggle
   # darkhttp
   # unrar
+
+  yubikey-personalization
 ]

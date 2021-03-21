@@ -32,7 +32,7 @@ in
     ./modules
   ];
 
-  system.stateVersion = "18.09";
+  system.stateVersion = "20.09";
 
   #services.kubernetes.roles = [ "master" "node" ];
   #services.kubernetes.kubelet.hostname = "localhost";
@@ -48,27 +48,35 @@ in
 
   #boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  boot.loader.timeout = 8;
+  boot.loader.timeout = 15;
   boot.loader.systemd-boot.enable = false;
   boot.loader.grub = {
     enable = true;
     efiSupport = true;
-    efiInstallAsRemovable = true; # don't depend on NVRAM
+    #efiInstallAsRemovable = true; # don't depend on NVRAM
     device = "nodev"; # EFI only
     extraEntries = ''
       menuentry "Ubuntu" {
         insmod fat
         insmod part_gpt
         insmod chain
-        search --no-floppy --fs-uuid 67E3-17ED --set root
+        search --no-floppy --fs-uuid 8FC3-FC3A --set root
         chainloader /EFI/ubuntu/shimx64.efi
+      }
+
+      menuentry "Windows" {
+        insmod fat
+        insmod part_gpt
+        insmod chain
+        search --no-floppy --fs-uuid 8FC3-FC3A --set root
+        chainloader /EFI/Microsoft/Boot/bootmgfw.efi
       }
 
       menuentry "rEFInd" {
         insmod fat
         insmod part_gpt
         insmod chain
-        search --no-floppy --fs-uuid 67E3-17ED --set root
+        search --no-floppy --fs-uuid 8FC3-FC3A --set root
         chainloader /EFI/BOOT/refind_x64.efi
       }
     '';
@@ -90,7 +98,8 @@ in
 
   # Select internationalisation properties.
   time.timeZone = "US/Eastern";
-  i18n.consoleUseXkbConfig = true;
+  #i18n.consoleUseXkbConfig = true; # old
+  console.useXkbConfig = true;
   i18n.inputMethod = {
     enabled = "ibus";
     ibus.engines = with pkgs.ibus-engines; [
@@ -153,6 +162,7 @@ in
 
   services.udev.packages = [
     pkgs.openocd # embedded dev devices
+    pkgs.yubikey-personalization
   ];
 
   services.logind.extraConfig =
@@ -240,45 +250,46 @@ in
     libinput.tapping = false;
     libinput.tappingDragLock = false;
 
-    #desktopManager.plasma5.enable = true;
-    #desktopManager.default = "plasma5";
-    #displayManager.sddm.enable = true;
+    desktopManager.plasma5.enable = true;
+    #desktopManager.default = "plasma5"; # old
+    displayManager.defaultSession = "plasma5";
+    displayManager.sddm.enable = true;
 
-    desktopManager.default = "none";
-    desktopManager.xterm.enable = false;
-    displayManager.slim = {
-      enable = true;
-      defaultUser = "cstrahan";
-      extraConfig = ''
-        console_cmd ${pkgs.rxvt_unicode_with-plugins}/bin/urxvt -C -fg white -bg black +sb -T "Console login" -e ${pkgs.shadow}/bin/login
-      '';
-      theme = ./slim-theme;
-    };
-    windowManager.default = "xmonad";
-    windowManager.xmonad.enable = true;
-    windowManager.xmonad.extraPackages = hpkgs: [
-      hpkgs.taffybar
-      hpkgs.xmonad-contrib
-      hpkgs.xmonad-extras
-    ];
+    #desktopManager.default = "none";
+    #desktopManager.xterm.enable = false;
+    #displayManager.slim = {
+    #  enable = true;
+    #  defaultUser = "cstrahan";
+    #  extraConfig = ''
+    #    console_cmd ${pkgs.rxvt_unicode_with-plugins}/bin/urxvt -C -fg white -bg black +sb -T "Console login" -e ${pkgs.shadow}/bin/login
+    #  '';
+    #  theme = ./slim-theme;
+    #};
+    #windowManager.default = "xmonad";
+    #windowManager.xmonad.enable = true;
+    #windowManager.xmonad.extraPackages = hpkgs: [
+    #  hpkgs.taffybar
+    #  hpkgs.xmonad-contrib
+    #  hpkgs.xmonad-extras
+    #];
 
-    displayManager.sessionCommands = ''
-      # Set GTK_DATA_PREFIX so that GTK+ can find the themes
-      export GTK_DATA_PREFIX=${config.system.path}
+    #displayManager.sessionCommands = ''
+    #  # Set GTK_DATA_PREFIX so that GTK+ can find the themes
+    #  export GTK_DATA_PREFIX=${config.system.path}
 
-      # find theme engines
-      export GTK_PATH=${config.system.path}/lib/gtk-3.0:${config.system.path}/lib/gtk-2.0
+    #  # find theme engines
+    #  export GTK_PATH=${config.system.path}/lib/gtk-3.0:${config.system.path}/lib/gtk-2.0
 
-      # Find the mouse
-      export XCURSOR_PATH=~/.icons:~/.nix-profile/share/icons:/var/run/current-system/sw/share/icons
+    #  # Find the mouse
+    #  export XCURSOR_PATH=~/.icons:~/.nix-profile/share/icons:/var/run/current-system/sw/share/icons
 
-      ${pkgs.xorg.xset}/bin/xset r rate 220 50
+    #  ${pkgs.xorg.xset}/bin/xset r rate 220 50
 
-      if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
-        eval "$(${pkgs.dbus.out}/bin/dbus-launch --sh-syntax --exit-with-session)"
-        export DBUS_SESSION_BUS_ADDRESS
-      fi
-    '';
+    #  if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
+    #    eval "$(${pkgs.dbus.out}/bin/dbus-launch --sh-syntax --exit-with-session)"
+    #    export DBUS_SESSION_BUS_ADDRESS
+    #  fi
+    #'';
   };
 
   #services.gitlab.enable = true;
@@ -287,43 +298,45 @@ in
   services.dbus.enable = true;
   services.upower.enable = true;
 
-  services.redshift.enable = true;
-  services.redshift.latitude = "39";
-  services.redshift.longitude = "-77";
-  services.redshift.temperature.day = 5500;
-  services.redshift.temperature.night = 2300;
+  #location.latitude = 39.0;
+  #location.longitude = -77.0;
+  #services.redshift.enable = true;
+  #services.redshift.latitude = "39"; # old config
+  #services.redshift.longitude = "-77"; # old config
+  #services.redshift.temperature.day = 5500;
+  #services.redshift.temperature.night = 2300;
 
-  services.actkbd.enable = true;
-  services.actkbd.bindings = [
-    { keys = [ 224 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -U 4"; }
-    { keys = [ 225 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -A 4"; }
-    { keys = [ 229 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight down"; }
-    { keys = [ 230 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight up"; }
-  ];
+  #services.actkbd.enable = true;
+  #services.actkbd.bindings = [
+  #  { keys = [ 224 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -U 4"; }
+  #  { keys = [ 225 ]; events = [ "key" "rep" ]; command = "${pkgs.light}/bin/light -A 4"; }
+  #  { keys = [ 229 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight down"; }
+  #  { keys = [ 230 ]; events = [ "key" "rep" ]; command = "${pkgs.kbdlight}/bin/kbdlight up"; }
+  #];
 
-  services.mongodb.enable = true;
-  services.zookeeper.enable = true;
-  services.apache-kafka.enable = true;
+  #services.mongodb.enable = true;
+  #services.zookeeper.enable = true;
+  #services.apache-kafka.enable = true;
   #services.elasticsearch.enable = true;
   #services.memcached.enable = true;
-  services.redis.enable = true;
-  systemd.services.redis.serviceConfig.LimitNOFILE = 10032;
+  #services.redis.enable = true;
+  #systemd.services.redis.serviceConfig.LimitNOFILE = 10032;
 
-  services.mesos.master = {
-    advertiseIp = "127.0.0.1";
-    enable = true;
-    zk = "zk://localhost:2181/mesos";
-  };
+  #services.mesos.master = {
+  #  advertiseIp = "127.0.0.1";
+  #  enable = true;
+  #  zk = "zk://localhost:2181/mesos";
+  #};
 
-  services.mesos.slave = {
-    enable = true;
-    ip = "127.0.0.1";
-    master = "127.0.0.1:5050";
-    dockerRegistry = "/tmp/mesos/images/docker";
-    executorEnvironmentVariables = {
-      PATH = "/run/current-system/sw/bin";
-    };
-  };
+  #services.mesos.slave = {
+  #  enable = true;
+  #  ip = "127.0.0.1";
+  #  master = "127.0.0.1:5050";
+  #  dockerRegistry = "/tmp/mesos/images/docker";
+  #  executorEnvironmentVariables = {
+  #    PATH = "/run/current-system/sw/bin";
+  #  };
+  #};
 
   # Make sure to run:
   #  sudo createuser -s postgres
@@ -349,18 +362,29 @@ in
   users = {
     mutableUsers = false;
     extraGroups.docker.gid = lib.mkForce config.ids.gids.docker;
-    extraUsers = [
-      {
-        uid             = 2000;
-        name            = "cstrahan";
+    #extraUsers = [
+    #  {
+    #    uid             = 1000;
+    #    name            = "cstrahan";
+    #    group           = "users";
+    #    extraGroups     = [ "wheel" "networkmanager" "docker" "fuse" "vboxusers" ];
+    #    isNormalUser    = true;
+    #    passwordFile    = "/etc/nixos/passwords/cstrahan";
+    #    useDefaultShell = false;
+    #    shell           = "/run/current-system/sw/bin/zsh";
+    #  }
+    #];
+    extraUsers = {
+      cstrahan = {
+        uid             = 1000;
         group           = "users";
         extraGroups     = [ "wheel" "networkmanager" "docker" "fuse" "vboxusers" ];
         isNormalUser    = true;
         passwordFile    = "/etc/nixos/passwords/cstrahan";
         useDefaultShell = false;
         shell           = "/run/current-system/sw/bin/zsh";
-      }
-    ];
+      };
+    };
   };
 
   nix.package = pkgs.nixUnstable;
@@ -368,6 +392,7 @@ in
   # gc-keep-outputs in Nix 1.11, keep-outputs in Nix 1.12
   nix.extraOptions = ''
     keep-outputs = true
+    experimental-features = nix-command flakes
   '';
   nix.binaryCaches = [
     "https://cache.nixos.org"
@@ -409,7 +434,6 @@ in
       fira
       fira-code
       fira-mono
-      font-droid
 
       iosevka
       hack-font
@@ -431,15 +455,15 @@ in
   nixpkgs.config.allowUnfree = true;
   nixpkgs.config.dmenu.enableXft = true;
   nixpkgs.config.firefox = {
-   enableGoogleTalkPlugin = true;
-   enableAdobeFlash = true;
-   enableAdobeFlashDRM = true;
-   jre = false;
-   icedtea = true;
+   #enableGoogleTalkPlugin = true;
+   #enableAdobeFlash = true;
+   #enableAdobeFlashDRM = true;
+   #jre = false; # old
+   #icedtea = true; # old
   };
   nixpkgs.config.chromium = {
-   enablePepperFlash = true;
-   enableWideVine = true;
+   #enablePepperFlash = true; # ???
+   #enableWideVine = true; # ???
   };
   nixpkgs.overlays = [
     (import ./overlays/packages.nix)
