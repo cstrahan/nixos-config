@@ -1,6 +1,8 @@
 #let stdenv = [ stdenv.cc stdenv.cc.binutils ] ++ stdenv.initialPath; in
 
 pkgs: with pkgs; [
+  inkdrop
+
   # man pages
   gparted
   man-pages

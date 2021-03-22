@@ -1,9 +1,15 @@
+# https://github.com/hlissner/dotfiles/blob/master/flake.nix
+# https://github.com/tfmoraes/nixoscfg/blob/main/flake.nix
+# https://github.com/terlar/nix-config/blob/master/flake.nix
+# https://blog.ysndr.de/posts/internals/2021-01-01-flake-ification/
+
 # https://blog.pclewis.com/2016/03/19/xmonad-spacemacs-style.html
 # https://github.com/pclewis/dotfiles/tree/master/xmonad/.xmonad
 # https://hoodoo.github.io/
 # http://loicpefferkorn.net/2015/01/arch-linux-on-macbook-pro-retina-2014-with-dm-crypt-lvm-and-suspend-to-disk/
 # https://wiki.archlinux.org/index.php/Intel_graphics#Module-based_Powersaving_Options
 # https://bbs.archlinux.org/viewtopic.php?id=199388
+# https://github.com/colemickens/nixcfg/blob/105ae18296915eec45e1a2bf9b183fa4890f3924/flake.nix
 
 # TODO:
 #  * pulseaudio-dlna
@@ -13,22 +19,25 @@
 # https://developer.chrome.com/extensions/messaging
 # https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Native_messaging
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs
+, meta # from specialArgs in flake.nix
+, ... }:
 
 # Per-machine settings.
 let
-  meta = import ./meta.nix;
   isMBP = meta.hostname == "cstrahan-mbp-nixos"
        || meta.hostname == "cstrahan-work-mbp-nixos";
   isWork = meta.hostname == "cstrahan-work-mbp-nixos";
-  isNvidia = meta.productName != "MacBookPro11,5";
+  isNvidia = meta.hostname == "cstrahan-nixos"
+          || meta.hostname == "cstrahan-mbp-nixos";
   gitit = import ./private/gitit.nix;
 
 in
 
 {
   imports = [
-    /etc/nixos/hardware-configuration.nix
+    #/etc/nixos/hardware-configuration.nix
+    ./hardware-configuration.nix
     ./modules
   ];
 
@@ -111,7 +120,7 @@ in
   };
 
   networking.hostName = meta.hostname;
-  networking.hostId = "0ae2b4e1";
+  networking.hostId = "0ae2b4e1"; # TODO
 
   networking.networkmanager.enable = lib.mkForce true;
   networking.networkmanager.insertNameservers = [ "8.8.8.8" "8.8.4.4" ];
@@ -133,7 +142,7 @@ in
     enableRedistributableFirmware = true;
     cpu.intel.updateMicrocode = true;
     cpu.amd.updateMicrocode = false;
-    facetimehd.enable = true;
+    facetimehd.enable = isMBP;
     opengl.enable = true;
     opengl.driSupport32Bit = true;
     opengl.extraPackages = with pkgs; [ vaapiIntel libvdpau-va-gl vaapiVdpau ];

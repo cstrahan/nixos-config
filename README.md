@@ -4,10 +4,16 @@ My personal NixOS configuration.
 
 # Example
 
-```
-echo "{ hostname = \"$(hostname)\"; productName = \"$(cat /sys/class/dmi/id/product_name)\"; }" > meta.nix
+To build:
 
-nixos-rebuild build -I nixpkgs=$HOME/src/nixpkgs -I nixos-config=$PWD/configuration.nix
+```
+nixos-rebuild build --flake '.#'
+```
+
+To switch:
+
+```
+sudo nixos-rebuild switch --flake '.#'
 ```
 
 # Home Management

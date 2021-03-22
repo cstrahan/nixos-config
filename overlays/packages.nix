@@ -1,6 +1,7 @@
 self: super:
 
 {
+  inkdrop = self.callPackage ../packages/inkdrop.nix { };
   pragmatapro = self.callPackage ../packages/pragmatapro.nix { };
   vimHuge = self.callPackage ../packages/vim-huge.nix { };
   kdbplus = super.kdbplus.overrideAttrs (_: {
